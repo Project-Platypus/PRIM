@@ -3,15 +3,17 @@ import pandas as pd
 from ema_workbench import prim
 import matplotlib.pyplot as plt
 
-df = pd.DataFrame(np.random.rand(1000, 2), columns=["x1", "x2"])
-response = df["x1"] * df["x2"] > 0.5
+df = pd.DataFrame(np.random.rand(1000, 3), columns=["x1", "x2", "x3"])
+response = df["x1"] * df["x2"] + .2*df["x3"] > 0.5
 
-p = prim.Prim(df.to_records(), response.values, threshold=0.8, peel_alpha=0.1)
+p = prim.Prim(df.to_records(), response.values, threshold=0.95, peel_alpha=0.1)
 box = p.find_box()
 box.show_tradeoff().savefig("tradeoff.png")
-fig = box.show_pairs_scatter()
-fig.set_size_inches((12, 12))
-fig.savefig("scatter.png")
+#box.show_box_details()
+#fig = box.show_pairs_scatter()
+#fig.set_size_inches((12, 12))
+#fig.savefig("scatter.png")
+#box.inspect(style="graph")
 plt.show()
 
 

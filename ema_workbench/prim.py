@@ -13,7 +13,7 @@ The implementation is designed for interactive use in combination with the
 ipython notebook. 
 
 '''
-from __future__ import (absolute_import, print_function, division,
+from __future__ import (absolute_import, division,
                         unicode_literals)
 import six
 
@@ -36,9 +36,11 @@ import pandas as pd
 try:
     import mpld3
 except ImportError:
+    logging.getLogger(__name__).info("mpld3 library not found, some functionality will be disabled")
     global mpld3
     mpld3 = None
 
+import mpldatacursor
 from .plotting_util import make_legend
 from .exceptions import PRIMError
 
@@ -99,7 +101,7 @@ def get_quantile(data, quantile):
     return value
 
 
-def _pair_wise_scatter(x,y, box_lim, restricted_dims):
+def _pair_wise_scatter(x,y, box_lim, restricted_dims, grid=None):
     ''' helper function for pair wise scatter plotting
     
     #TODO the cases of interest should be in red rather than in blue
@@ -125,10 +127,13 @@ def _pair_wise_scatter(x,y, box_lim, restricted_dims):
     combis = [(field1, field2) for field1 in restricted_dims\
                                for field2 in restricted_dims]
 
-    grid = gridspec.GridSpec(len(restricted_dims), len(restricted_dims))                             
-    grid.update(wspace = 0.1,
-                hspace = 0.1)    
-    figure = plt.figure()
+    if not grid:
+        grid = gridspec.GridSpec(len(restricted_dims), len(restricted_dims))                             
+        grid.update(wspace = 0.1,
+                    hspace = 0.1)    
+        figure = plt.figure()
+    else:
+        figure = plt.gcf()
     
     for field1, field2 in combis:
         i = restricted_dims.index(field1)
@@ -159,9 +164,9 @@ def _pair_wise_scatter(x,y, box_lim, restricted_dims):
 
             for n in [0,1]:
                 ax.plot(x_1,
-                    [x_2[n], x_2[n]], c='r', linewidth=3)
+                    [x_2[n], x_2[n]], c='k', linewidth=3)
                 ax.plot([x_1[n], x_1[n]],
-                    x_2, c='r', linewidth=3)
+                    x_2, c='k', linewidth=3)
             
 #       #reuse labeling function from pairs_plotting
         pairs_plotting.do_text_ticks_labels(ax, i, j, field1, field2, None, 
@@ -306,6 +311,95 @@ class PrimBox(object):
         print(box_lim)
         print()
         
+    def show_box_details(self):
+        i = self._cur_box
+        qp_values = self._calculate_quasi_p(i)
+        uncs = [(key, value) for key, value in qp_values.items()]
+        uncs.sort(key=itemgetter(1))
+        uncs = [uncs[0] for uncs in uncs]
+        n = len(uncs)
+        
+        fig = plt.figure()
+        
+        outer_grid = gridspec.GridSpec(1, 2, wspace=0.1, hspace=0.1)
+        
+        inner_grid = gridspec.GridSpecFromSubplotSpec(n, n,
+            subplot_spec=outer_grid[0], wspace=0.1, hspace=0.1)  
+        
+        self.show_pairs_scatter(grid=inner_grid)
+        
+        inner_grid = gridspec.GridSpecFromSubplotSpec(2, 1,
+            subplot_spec=outer_grid[1], wspace=0.0, hspace=0.0)
+        
+        ax1 = plt.Subplot(fig, inner_grid[0])
+        fig.add_subplot(ax1)
+        self.show_box()
+        
+        ax2 = plt.Subplot(fig, inner_grid[1], frame_on=False)
+        ax2.xaxis.set_visible(False)
+        ax2.yaxis.set_visible(False)
+        fig.add_subplot(ax2)
+         
+        ax2.add_table(plt.table(cellText=[["Coverage", "%0.3f" % self.peeling_trajectory['coverage'][i]],
+                                          ["Density", "%0.3f" % self.peeling_trajectory['density'][i]],
+                                          ["Mean", "%0.3f" % self.peeling_trajectory['mean'][i]],
+                                          ["Res Dim", "%0.3f" % self.peeling_trajectory['res dim'][i]],
+                                          ["Mass", "%0.3f" % self.peeling_trajectory['mass'][i]]],
+                                cellLoc='center',
+                                colWidths=[0.2, 0.8],
+                                loc='center'))
+        
+        return fig
+        
+        
+    def show_box(self, ax=None):
+        i = self._cur_box
+        qp_values = self._calculate_quasi_p(i)
+        uncs = [(key, value) for key, value in qp_values.items()]
+        uncs.sort(key=itemgetter(1))
+        uncs = [uncs[0] for uncs in uncs]
+        
+        box_lim_init = self.prim.box_init
+        box_lim = self.box_lims[i]
+        norm_box_lim =  sdutil._normalize(box_lim, box_lim_init, uncs)
+        
+        left = []
+        height = []
+        bottom = []
+        
+        for i, _ in enumerate(uncs):
+            left.append(i)
+            height.append(norm_box_lim[i][1]-norm_box_lim[i][0])
+            bottom.append(norm_box_lim[i][0])
+        
+        plt.bar(left, 
+                height,
+                bottom = bottom,
+                align="center")
+        plt.ylim(0, 1)
+        plt.xticks(left, uncs)
+        plt.tick_params(axis='y',
+                        which='both',
+                        right='off',
+                        left='off',
+                        labelleft='off')
+        
+        fig = plt.gcf()
+        ax = plt.gca()
+        
+        for i, _ in enumerate(uncs):
+            ax.text(i,
+                    norm_box_lim[i][0]-0.01, "%0.2f" % norm_box_lim[i][0],
+                    horizontalalignment='center',
+                    verticalalignment='top')
+            
+            ax.text(i,
+                    norm_box_lim[i][1], "%0.2f" % norm_box_lim[i][1],
+                    horizontalalignment='center',
+                    verticalalignment='bottom')
+            
+        return fig
+        
     def _inspect_graph(self,  i, uncs, qp_values):
         '''Helper function for visualizing box statistics in 
         graph form'''        
@@ -399,7 +493,7 @@ class PrimBox(object):
                     loc='right',
                     bbox=[1.1, 0.9, 0.1, 0.1])
         
-            plt.tight_layout()
+            #plt.tight_layout()
         return fig
         
     def select(self, i):
@@ -498,6 +592,20 @@ class PrimBox(object):
                     ax, ncol=5, alpha=1)
         return fig
     
+    def formatter(self, **kwargs):
+        i = kwargs.get("ind")[0]
+        data = self.peeling_trajectory.ix[i]
+        label = "Box %d\nCoverage: %2.2f\nDensity: %2.2f\nMass: %2.2f\nRes Dim: %2.2f" % (i, data["coverage"], data["density"], data["mass"], data["res dim"])
+        return label
+    
+    def handle_click(self, event):
+        if event.mouseevent.dblclick:
+            i = event.ind[0]
+            self.select(i)
+            
+            if event.mouseevent.button == 1:
+                self.show_box_details().show()
+    
     def show_tradeoff(self):
         '''Visualize the trade off between coverage and density. Color is used
         to denote the number of restricted dimensions.'''
@@ -516,11 +624,16 @@ class PrimBox(object):
                        self.peeling_trajectory['density'], 
                        c=self.peeling_trajectory['res dim'], 
                        norm=norm,
-                       cmap=cmap)
+                       cmap=cmap,
+                       picker=True)
+
         ax.set_ylabel('density')
         ax.set_xlabel('coverage')
         ax.set_ylim(ymin=0, ymax=1.2)
         ax.set_xlim(xmin=0, xmax=1.2)
+        
+        mpldatacursor.datacursor(formatter=self.formatter, hover=True)
+        fig.canvas.mpl_connect('pick_event', self.handle_click)
         
         ticklocs = np.arange(0, 
                              max(self.peeling_trajectory['res dim'])+1, 
@@ -538,11 +651,11 @@ class PrimBox(object):
             }
             th
             {
-              background-color:  rgba(255,255,255,0.6);;;
+              background-color:  rgba(255,255,255,0.95);
             }
             td
             {
-              background-color: rgba(255,255,255,0.6);;
+              background-color: rgba(255,255,255,0.95);
             }
             table, th, td
             {
@@ -557,10 +670,11 @@ class PrimBox(object):
             columns_to_include = ['coverage','density', 'mass', 'res dim']
             frmt = lambda x: '{:.2f}'.format( x )
             for i in range(len(self.peeling_trajectory['coverage'])):
-                label = self.peeling_trajectory.ix[[i], columns_to_include].T
-                label.columns = ['box {0}'.format(i)]
-                # .to_html() is unicode; so make leading 'u' go away with str()
-                labels.append(str(label.to_html(float_format=frmt)))        
+                label = self.peeling_trajectory.ix[[i], columns_to_include]
+                label.columns = ["Coverage", "Density", "Mass", "Res. Dim."]
+                label = label.T
+                label.columns = ["Box {0}".format(i)]
+                labels.append(str(label.to_html(float_format=frmt)))       
     
             tooltip = mpld3.plugins.PointHTMLTooltip(p, labels, voffset=10, 
                                                hoffset=10, css=css)  
@@ -568,7 +682,7 @@ class PrimBox(object):
         
         return fig
     
-    def show_pairs_scatter(self):
+    def show_pairs_scatter(self, grid=None):
         '''
         
         make a pair wise scatter plot of all the restricted dimensions
@@ -576,9 +690,15 @@ class PrimBox(object):
         and the boxlims superimposed on top.
         
         '''   
-        return _pair_wise_scatter(self.prim.x, self.prim.y, self.box_lim, 
+        fig = _pair_wise_scatter(self.prim.x, self.prim.y, self.box_lim, 
                            sdutil._determine_restricted_dims(self.box_lim, 
-                                                        self.prim.box_init))
+                                                        self.prim.box_init),
+                            grid = grid)
+        
+        title = "Box %d" % self._cur_box
+        fig.suptitle(title, fontsize=16)
+        fig.canvas.set_window_title(title)
+        return fig
     
     def write_ppt_to_stdout(self):
         '''write the peeling and pasting trajectory to stdout'''

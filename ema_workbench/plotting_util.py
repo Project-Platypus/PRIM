@@ -3,7 +3,7 @@
 Plotting utility functions
 
 '''
-from __future__ import (absolute_import, print_function, division,
+from __future__ import (absolute_import, division,
                         unicode_literals)
 
 
@@ -27,47 +27,83 @@ COLOR_LIST = ['b',
               'y',
               'k'
                 ]
-'''Default color list'''
-
-TIGHT = False
-'''Parameter controlling whether tight layout from matplotlib should be used'''
-
-TIME = "TIME"
-'''Default key for time'''
-
-ENVELOPE = 'envelope'
-'''constant for plotting envelopes'''
-
-LINES = 'lines'
-'''constant for plotting lines'''
-
-ENV_LIN = "env_lin"
-'''constant for plotting envelopes with lines'''
-
-KDE = 'kde'
-'''constant for plotting density as a kernel density estimate'''
-
-HIST = 'hist'
-'''constant for plotting density as a histogram'''
-
-BOXPLOT = 'boxplot'
-'''constant for plotting density as a boxplot'''
-
-VIOLIN = 'violin'
-'''constant for plotting density as a violin plot, which combines a
-Gaussian density estimate with a boxplot'''
 
 # used for legend
 LINE = 'line'
 PATCH = 'patch'
 SCATTER = 'scatter'
 
-#see http://matplotlib.sourceforge.net/users/customizing.html for details
-#mpl.rcParams['savefig.dpi'] = 600
-#mpl.rcParams['axes.formatter.limits'] = (-5, 5)
-#mpl.rcParams['font.family'] = 'serif'
-#mpl.rcParams['font.serif'] = 'Times New Roman'
-#mpl.rcParams['font.size'] = 12.0
+# from matplotlib import cbook
+
+# class DataCursor(object):
+#     """A simple data cursor widget that displays the x,y location of a
+#     matplotlib artist when it is selected."""
+#     def __init__(self, artists, tolerance=5, offsets=(-20, 20), 
+#                  template='x: %0.2f\ny: %0.2f', display_all=False):
+#         """Create the data cursor and connect it to the relevant figure.
+#         "artists" is the matplotlib artist or sequence of artists that will be 
+#             selected. 
+#         "tolerance" is the radius (in points) that the mouse click must be
+#             within to select the artist.
+#         "offsets" is a tuple of (x,y) offsets in points from the selected
+#             point to the displayed annotation box
+#         "template" is the format string to be used. Note: For compatibility
+#             with older versions of python, this uses the old-style (%) 
+#             formatting specification.
+#         "display_all" controls whether more than one annotation box will
+#             be shown if there are multiple axes.  Only one will be shown
+#             per-axis, regardless. 
+#         """
+#         self.template = template
+#         self.offsets = offsets
+#         self.display_all = display_all
+#         if not cbook.iterable(artists):
+#             artists = [artists]
+#         self.artists = artists
+#         self.axes = tuple(set(art.axes for art in self.artists))
+#         self.figures = tuple(set(ax.figure for ax in self.axes))
+# 
+#         self.annotations = {}
+#         for ax in self.axes:
+#             self.annotations[ax] = self.annotate(ax)
+# 
+#         for artist in self.artists:
+#             artist.set_picker(tolerance)
+#         for fig in self.figures:
+#             fig.canvas.mpl_connect('pick_event', self)
+# 
+#     def annotate(self, ax):
+#         """Draws and hides the annotation box for the given axis "ax"."""
+#         annotation = ax.annotate(self.template, xy=(0, 0), ha='right',
+#                 xytext=self.offsets, textcoords='offset points', va='bottom',
+#                 bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=1.0),
+#                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0')
+#                 )
+#         annotation.set_visible(False)
+#         return annotation
+# 
+#     def __call__(self, event):
+#         """Intended to be called through "mpl_connect"."""
+#         # Rather than trying to interpolate, just display the clicked coords
+#         # This will only be called if it's within "tolerance", anyway.
+#         selected = None
+#         
+#         if isinstance(event.artist, mpl.collections.PathCollection):
+#             print event.artist.get_paths()
+#             
+#         print selected
+#         x, y = event.mouseevent.xdata, event.mouseevent.ydata
+#         annotation = self.annotations[event.artist.axes]
+#         if x is not None:
+#             if not self.display_all:
+#                 # Hide any other annotation boxes...
+#                 for ann in self.annotations.values():
+#                     ann.set_visible(False)
+#             # Update the annotation in the current axis..
+#             annotation.xy = x, y
+#             annotation.set_text(self.template % (x, y))
+#             annotation.set_visible(True)
+#             event.canvas.draw()
 
 def make_legend(categories,
                 ax,
