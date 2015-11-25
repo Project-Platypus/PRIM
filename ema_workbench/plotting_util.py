@@ -20,7 +20,7 @@ import matplotlib as mpl
 import matplotlib.gridspec as gridspec 
 import matplotlib.cm as cm
 
-from .ema_exceptions import EMAError
+from .exceptions import PRIMError
 from .ema_logging import info, warning
 
 # .. codeauthor:: jhkwakkel <j.h.kwakkel (at) tudelft (dot) nl>
@@ -290,7 +290,7 @@ def group_density(ax_d, density, outcomes, outcome_to_plot, group_labels,
                   group_labels]
         plot_kde(ax_d, values, log)
     else:
-        raise EMAError("unknown density type: {}".format(density))
+        raise PRIMError("unknown density type: {}".format(density))
 
 
 def simple_density(density, value, ax_d, ax, log):
@@ -317,7 +317,7 @@ def simple_density(density, value, ax_d, ax, log):
     elif density==VIOLIN:
         plot_violinplot(ax_d, [value[:,-1]], log)
     else:
-        raise EMAError("unknown density plot type")
+        raise PRIMError("unknown density plot type")
         
     ax_d.get_yaxis().set_view_interval(
                  ax.get_yaxis().get_view_interval()[0],
@@ -670,7 +670,7 @@ def prepare_pairs_data(results,
        
     '''
     if isinstance(outcomes_to_show, six.string_types):
-        raise EMAError("for pair wise plotting, more than one outcome needs to be provided")
+        raise PRIMError("for pair wise plotting, more than one outcome needs to be provided")
     
     outcomes, outcomes_to_show, time, grouping_labels = prepare_data(results, 
                                                         outcomes_to_show,
@@ -744,7 +744,7 @@ def prepare_data(results,
         if not grouping_specifiers:
             #no grouping specifier, so infer from the data
             if group_by=='index':
-                raise EMAError("no grouping specifiers provided while trying to group on index")
+                raise PRIMError("no grouping specifiers provided while trying to group on index")
             else:
                 column_to_group_by = experiments[group_by]
                 if column_to_group_by.dtype == np.object:

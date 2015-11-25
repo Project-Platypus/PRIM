@@ -40,7 +40,7 @@ except ImportError:
 
 from .plotting_util import make_legend
 from .ema_logging import info, debug
-from .ema_exceptions import EMAError
+from .exceptions import PRIMError
 
 from ema_workbench import pairs_plotting
 from ema_workbench import scenario_discovery_util as sdutil
@@ -835,7 +835,7 @@ class Prim(sdutil.OutputFormatterMixin):
     
                 subsets[key] = list(value)
                 if (seen & value):
-                    raise EMAError("uncertainty occurs in more then one subset")
+                    raise PRIMError("uncertainty occurs in more then one subset")
                 else:
                     seen = seen | set(value)
             
@@ -1441,7 +1441,7 @@ class Prim(sdutil.OutputFormatterMixin):
         
         for key in keys:
             if dtypes[key][0] == np.dtype(object):
-                raise EMAError("%s has dtype object and can thus not be rotated" %key)
+                raise PRIMError("%s has dtype object and can thus not be rotated" %key)
         return True
 
     def _rotate_subset(self, value, orig_experiments, logical): 
