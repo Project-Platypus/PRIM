@@ -20,6 +20,7 @@ import six
 from operator import itemgetter
 import copy
 import math
+import logging
 
 import numpy as np
 import numpy.lib.recfunctions as rf
@@ -36,10 +37,9 @@ try:
     import mpld3
 except ImportError:
     global mpld3
-    mpdl3 = None
+    mpld3 = None
 
 from .plotting_util import make_legend
-from .ema_logging import info, debug
 from .exceptions import PRIMError
 
 from ema_workbench import pairs_plotting
@@ -180,7 +180,7 @@ class CurEntry(object):
         return instance.peeling_trajectory[self.name][instance._cur_box]
     
     def __set__(self, instance, value):
-        raise PrimException("this property cannot be assigned to")
+        raise PRIMError("this property cannot be assigned to")
                 
 
 class PrimBox(object):
@@ -414,7 +414,7 @@ class PrimBox(object):
         
         '''
         if self._frozen:
-            raise PrimException("""box has been frozen because PRIM has found 
+            raise PRIMError("""box has been frozen because PRIM has found 
                                 at least one more recent box""")
         
         indices = sdutil._in_box(self.prim.x[self.prim.yi_remaining], 
@@ -640,11 +640,6 @@ class PrimBox(object):
         return row
 
 
-class PrimException(Exception):
-    '''Base exception class for prim related exceptions'''
-    pass
-
-
 def setup_prim(results, classify, threshold, incl_unc=[], **kwargs):
     """Helper function for setting up the prim algorithm
     
@@ -744,7 +739,7 @@ class Prim(sdutil.OutputFormatterMixin):
         self.y = y
         
         if len(self.y.shape) > 1:
-            raise PrimException("y is not a 1-d array")
+            raise PRIMError("y is not a 1-d array")
         
         # store the remainder of the parameters
         self.paste_alpha = paste_alpha
@@ -892,6 +887,8 @@ class Prim(sdutil.OutputFormatterMixin):
     def find_box(self):
         '''Execute one iteration of the PRIM algorithm. That is, find one
         box, starting from the current state of Prim.'''
+        logger = logging.getLogger(__name__)
+        
         # set the indices
         self._update_yi_remaining()
         
@@ -900,11 +897,11 @@ class Prim(sdutil.OutputFormatterMixin):
             box._frozen = True
         
         if self.yi_remaining.shape[0] == 0:
-            info("no data remaining")
+            logger.info("no data remaining")
             return
         
         # log how much data and how many coi are remaining
-        info(self.message.format(self.yi_remaining.shape[0],
+        logger.info(self.message.format(self.yi_remaining.shape[0],
                                  self.determine_coi(self.yi_remaining)))
         
         # make a new box that contains all the remaining data points
@@ -912,11 +909,11 @@ class Prim(sdutil.OutputFormatterMixin):
         
         #  perform peeling phase
         box = self._peel(box)
-        debug("peeling completed")
+        logger.debug("peeling completed")
 
         # perform pasting phase        
         box = self._paste(box)
-        debug("pasting completed")
+        logger.debug("pasting completed")
         
         message = "mean: {0}, mass: {1}, coverage: {2}, density: {3} restricted_dimensions: {4}"
         message = message.format(box.mean,
@@ -927,17 +924,17 @@ class Prim(sdutil.OutputFormatterMixin):
 
         if (self.threshold_type==ABOVE) &\
            (box.mean >= self.threshold):
-            info(message)
+            logger.info(message)
             self._boxes.append(box)
             return box
         elif (self.threshold_type==BELOW) &\
            (box.mean <= self.threshold):
-            info(message)
+            logger.info(message)
             self._boxes.append(box)
             return box
         else:
             # make a dump box
-            info('box does not meet threshold criteria, value is {}, returning dump box'.format(box.mean))
+            logger.info('box does not meet threshold criteria, value is {}, returning dump box'.format(box.mean))
             box = PrimBox(self, self.box_init, self.yi_remaining[:])
             self._boxes.append(box)
             return box
@@ -1211,7 +1208,7 @@ class Prim(sdutil.OutputFormatterMixin):
         
         possible_pastes = []
         for u in res_dim:
-            debug("pasting "+u)
+            logging.getLogger(__name__).info("pasting "+u)
             dtype = self.x.dtype.fields.get(u)[0].name
             pastes = self._pastes[dtype](self, box, u)
             [possible_pastes.append(entry) for entry in pastes] 
@@ -1392,7 +1389,7 @@ class Prim(sdutil.OutputFormatterMixin):
             elif y_old.shape[0] < y_new.shape[0]:
                 obj = (mean_new-mean_old)/(y_new.shape[0]-y_old.shape[0])
             else:
-                raise PrimException('''mean is different {} vs {}, while shape is the same,
+                raise PRIMError('''mean is different {} vs {}, while shape is the same,
                                        this cannot be the case'''.format(mean_old, mean_new))
         return obj
     
@@ -1413,7 +1410,7 @@ class Prim(sdutil.OutputFormatterMixin):
         obj = 0
         if mean_old != mean_new:
             if y_old.shape==y_new.shape:
-                raise PrimException('''mean is different {} vs {}, while shape is the same,
+                raise PRIMError('''mean is different {} vs {}, while shape is the same,
                                        this cannot be the case'''.format(mean_old, mean_new))
             
             change_mean = mean_new - mean_old

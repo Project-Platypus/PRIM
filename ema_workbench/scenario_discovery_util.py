@@ -4,13 +4,13 @@ Scenario discovery utilities used by both :mod:`cart` and :mod:`prim`
 from __future__ import (absolute_import, print_function, division,
                         unicode_literals)
 import abc
+import logging
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.lib.recfunctions as recfunctions
 import pandas as pd
 
-import ema_workbench.ema_logging as ema_logging
 from ema_workbench.plotting_util import COLOR_LIST
 
 # Created on May 24, 2015
@@ -91,7 +91,7 @@ def _make_box(x):
                 values = set(values)
                 box[name][:] = values
             except TypeError as e:
-                ema_logging.warning("{} has unhashable values".format(name))
+                logging.getLogger(__name__).warning("{} has unhashable values".format(name))
                 raise e
         else:
             box[name][0] = np.min(values, axis=0) 

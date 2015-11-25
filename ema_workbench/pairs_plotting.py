@@ -6,13 +6,12 @@ This module provides R style pairs plotting functionality.
 from __future__ import (absolute_import, print_function, division,
                         unicode_literals)
 
+import logging
 import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec 
 import matplotlib.cm as cm
-
-from .ema_logging import debug, info
 
 import ema_workbench.plotting_util as plotting_util
 from .plotting_util import prepare_pairs_data, make_legend
@@ -75,7 +74,7 @@ def pairs_lines(results,
     '''
     
     #unravel return from run_experiments   
-    debug("making a pars lines plot")
+    logging.getLogger(__name__).debug("making a pars lines plot")
     
     prepared_data = prepare_pairs_data(results, outcomes_to_show, group_by, 
                                        grouping_specifiers, None)
@@ -220,7 +219,7 @@ def pairs_density(results,
         instance
     
     '''
-    debug("generating pairwise density plot")
+    logging.getLogger(__name__).debug("generating pairwise density plot")
     
     prepared_data = prepare_pairs_data(results, outcomes_to_show, group_by, 
                                        grouping_specifiers, point_in_time,
@@ -429,7 +428,7 @@ def pairs_scatter(results,
     
     '''
     
-    debug("generating pairwise scatter plot")
+    logging.getLogger(__name__).debug("generating pairwise scatter plot")
    
     prepared_data = prepare_pairs_data(results, outcomes_to_show, group_by, 
                                        grouping_specifiers, point_in_time,
@@ -535,7 +534,7 @@ def do_text_ticks_labels(ax, i, j, field1, field2, ylabels, outcomes_to_show):
             try:
                 ax.set_xlabel(ylabels.get(field2))
             except KeyError:
-                info("no label specified for "+field2)
+                logging.getLogger(__name__).info("no label specified for "+field2)
         else:
             ax.set_xlabel(field2) 
     
@@ -548,6 +547,6 @@ def do_text_ticks_labels(ax, i, j, field1, field2, ylabels, outcomes_to_show):
             try:
                 ax.set_ylabel(ylabels.get(field1))
             except KeyError:
-                info("no label specified for "+field1) 
+                logging.getLogger(__name__).info("no label specified for "+field1) 
         else:
             ax.set_ylabel(field1)   
