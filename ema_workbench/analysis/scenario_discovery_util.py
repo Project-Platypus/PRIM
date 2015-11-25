@@ -1,5 +1,3 @@
-# Modified from EMA Workbench by Jan Kwakkel.  Licensed under the GNU General
-# Public License, version 3.
 '''
 Scenario discovery utilities used by both :mod:`cart` and :mod:`prim`
 '''
@@ -13,7 +11,7 @@ import numpy.lib.recfunctions as recfunctions
 import pandas as pd
 
 from ..util import ema_logging
-from .plotting_util import COLOR_LIST
+from ..analysis.plotting_util import COLOR_LIST
 
 # Created on May 24, 2015
 # 

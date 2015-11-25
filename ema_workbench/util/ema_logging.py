@@ -1,5 +1,3 @@
-# Modified from EMA Workbench by Jan Kwakkel.  Licensed under the GNU General
-# Public License, version 3.
 '''
 
 This module contains code for logging EMA processes. It is modeled on the 

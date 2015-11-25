@@ -3,9 +3,7 @@ import pandas as pd
 from ema_workbench.analysis import prim
 
 df = pd.DataFrame(np.random.rand(1000, 2), columns=["x1", "x2"])
-print df
 response = df["x1"] * df["x2"] > 0.5
-print response
 
 p = prim.Prim(df.to_records(), response.values, threshold=0.8, peel_alpha=0.1)
 box = p.find_box()
