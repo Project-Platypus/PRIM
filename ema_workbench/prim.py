@@ -39,11 +39,11 @@ except ImportError:
     mpdl3 = None
 
 from .plotting_util import make_legend
-from ..util.ema_logging import info, debug
-from ..util.ema_exceptions import EMAError
+from .ema_logging import info, debug
+from .ema_exceptions import EMAError
 
-# from . import pairs_plotting
-from . import scenario_discovery_util as sdutil
+from ema_workbench import pairs_plotting
+from ema_workbench import scenario_discovery_util as sdutil
 
 # Created on 22 feb. 2013
 # 
@@ -133,13 +133,7 @@ def _pair_wise_scatter(x,y, box_lim, restricted_dims):
     for field1, field2 in combis:
         i = restricted_dims.index(field1)
         j = restricted_dims.index(field2)
-        ax = figure.add_subplot(grid[i,j])        
-        ec='b'
-        fc='b'
-        
-        if field1==field2:
-            ec='white'
-            fc='white'
+        ax = figure.add_subplot(grid[i,j])  
         
         # scatter points
         for n in [0,1]:
@@ -147,12 +141,16 @@ def _pair_wise_scatter(x,y, box_lim, restricted_dims):
             x_1 = x_n[field2]
             x_2 = x_n[field1]
             
-            if (n==0) :
-                fc='white'
-            elif ec=='b':
-                fc='b'
+            if field1 == field2:
+                ec = 'white'
+            elif n == 0:
+                ec = 'b'
+            else:
+                ec = 'r'    
             
-            ax.scatter(x_1, x_2, facecolor=fc, edgecolor=ec, s=10)
+            ax.scatter(x_1, x_2, facecolor=ec, edgecolor=ec, s=10)
+            
+        ax.autoscale(tight=True)
 
         # draw boxlim
         if field1 != field2:
@@ -165,9 +163,9 @@ def _pair_wise_scatter(x,y, box_lim, restricted_dims):
                 ax.plot([x_1[n], x_1[n]],
                     x_2, c='r', linewidth=3)
             
-#         #reuse labeling function from pairs_plotting
-#         pairs_plotting.do_text_ticks_labels(ax, i, j, field1, field2, None, 
-#                                             restricted_dims)
+#       #reuse labeling function from pairs_plotting
+        pairs_plotting.do_text_ticks_labels(ax, i, j, field1, field2, None, 
+                                            restricted_dims)
             
     return figure
 

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-from ema_workbench.analysis import prim
+from ema_workbench import prim
+import matplotlib.pyplot as plt
 
 df = pd.DataFrame(np.random.rand(1000, 2), columns=["x1", "x2"])
 response = df["x1"] * df["x2"] > 0.5
@@ -11,6 +12,7 @@ box.show_tradeoff().savefig("tradeoff.png")
 fig = box.show_pairs_scatter()
 fig.set_size_inches((12, 12))
 fig.savefig("scatter.png")
+plt.show()
 
 
 # policy = {"pollution_limit" : [0.06]*100}

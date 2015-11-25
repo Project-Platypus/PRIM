@@ -20,8 +20,8 @@ import matplotlib as mpl
 import matplotlib.gridspec as gridspec 
 import matplotlib.cm as cm
 
-from ..util.ema_exceptions import EMAError
-from ..util.ema_logging import info, warning
+from .ema_exceptions import EMAError
+from .ema_logging import info, warning
 
 # .. codeauthor:: jhkwakkel <j.h.kwakkel (at) tudelft (dot) nl>
 

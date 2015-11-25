@@ -17,11 +17,11 @@ import numpy as np
 
 from ..util.ema_logging import debug, warning
 from ..util.ema_exceptions import EMAError
-from .plotting_util import (prepare_data, simple_kde, group_density, make_grid,
+from ema_workbench.plotting_util import (prepare_data, simple_kde, group_density, make_grid,
                            make_legend, plot_envelope, simple_density, 
                            do_titles, do_ylabels, TIME, ENV_LIN, ENVELOPE,
                            LINES, PATCH, LINE, TIGHT)
-from . import plotting_util
+from ema_workbench import plotting_util
  
 # .. codeauthor:: jhkwakkel <j.h.kwakkel (at) tudelft (dot) nl>
 

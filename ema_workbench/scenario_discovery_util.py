@@ -10,8 +10,8 @@ import numpy as np
 import numpy.lib.recfunctions as recfunctions
 import pandas as pd
 
-from ..util import ema_logging
-from ..analysis.plotting_util import COLOR_LIST
+import ema_workbench.ema_logging as ema_logging
+from ema_workbench.plotting_util import COLOR_LIST
 
 # Created on May 24, 2015
 # 

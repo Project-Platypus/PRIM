@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec 
 import matplotlib.cm as cm
 
-from ..util.ema_logging import debug, info
+from .ema_logging import debug, info
 
+import ema_workbench.plotting_util as plotting_util
 from .plotting_util import prepare_pairs_data, make_legend
-from . import plotting_util
 from .plotting_util import SCATTER, LINE
 
 # .. codeauthor:: jhkwakkel <j.h.kwakkel (at) tudelft (dot) nl>
