@@ -30,6 +30,7 @@ from mpl_toolkits.axes_grid1 import host_subplot  # @UnresolvedImport
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.gridspec as gridspec 
+from matplotlib.widgets import Button
 
 import pandas as pd
 
@@ -311,7 +312,17 @@ class PrimBox(object):
         print(box_lim)
         print()
         
-    def show_box_details(self):
+    def next(self, event):
+        i = (self._cur_box + 1) % self.peeling_trajectory.shape[0]
+        self.select(i)
+        self.show_box_details(fig=event.canvas.figure)
+        
+    def prev(self, event):
+        i = (self._cur_box - 1) % self.peeling_trajectory.shape[0]
+        self.select(i)
+        self.show_box_details(fig=event.canvas.figure)
+        
+    def show_box_details(self, fig=None):
         i = self._cur_box
         qp_values = self._calculate_quasi_p(i)
         uncs = [(key, value) for key, value in qp_values.items()]
@@ -319,35 +330,61 @@ class PrimBox(object):
         uncs = [uncs[0] for uncs in uncs]
         n = len(uncs)
         
-        fig = plt.figure()
+        if fig is not None:
+            print "Closing"
+            plt.figure(fig.number)
+            plt.clf()
+        else:
+            fig = plt.figure(figsize=(12, 6))
+        
+        
         
         outer_grid = gridspec.GridSpec(1, 2, wspace=0.1, hspace=0.1)
-        
+          
+        ax0 = plt.Subplot(fig, outer_grid[0], frame_on=False)
+        ax0.xaxis.set_visible(False)
+        ax0.yaxis.set_visible(False)
+        ax0.set_title("Box Coverage Plot")
+        fig.add_subplot(ax0)
+          
         inner_grid = gridspec.GridSpecFromSubplotSpec(n, n,
             subplot_spec=outer_grid[0], wspace=0.1, hspace=0.1)  
-        
+          
         self.show_pairs_scatter(grid=inner_grid)
-        
+          
         inner_grid = gridspec.GridSpecFromSubplotSpec(2, 1,
             subplot_spec=outer_grid[1], wspace=0.0, hspace=0.0)
-        
+          
         ax1 = plt.Subplot(fig, inner_grid[0])
+          
         fig.add_subplot(ax1)
         self.show_box()
-        
+        ax1.set_title("Restricted Dimensions", y=1.08)
+          
         ax2 = plt.Subplot(fig, inner_grid[1], frame_on=False)
         ax2.xaxis.set_visible(False)
         ax2.yaxis.set_visible(False)
         fig.add_subplot(ax2)
-         
-        ax2.add_table(plt.table(cellText=[["Coverage", "%0.3f" % self.peeling_trajectory['coverage'][i]],
-                                          ["Density", "%0.3f" % self.peeling_trajectory['density'][i]],
-                                          ["Mean", "%0.3f" % self.peeling_trajectory['mean'][i]],
-                                          ["Res Dim", "%0.3f" % self.peeling_trajectory['res dim'][i]],
-                                          ["Mass", "%0.3f" % self.peeling_trajectory['mass'][i]]],
+           
+        ax2.add_table(plt.table(cellText=[["Coverage", "%0.1f%%" % (100*self.peeling_trajectory['coverage'][i])],
+                                          ["Density", "%0.1f%%" % (100*self.peeling_trajectory['density'][i])],
+                                          ["Mass", "%0.1f%%" % (100*self.peeling_trajectory['mass'][i])],
+                                          ["Res Dim", "%d" % self.peeling_trajectory['res dim'][i]],
+                                          ["Mean", "%0.2f" % self.peeling_trajectory['mean'][i]]],
                                 cellLoc='center',
-                                colWidths=[0.2, 0.8],
+                                colWidths=[0.3, 0.7],
                                 loc='center'))
+        ax2.set_title("Statistics", y=0.7)
+
+        axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
+        axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
+        self.bnext = Button(axnext, "Next")
+        self.bprev = Button(axprev, "Prev")
+        self.bnext.on_clicked(self.next)
+        self.bprev.on_clicked(self.prev)
+        
+        plt.subplots_adjust(top=0.85)
+        plt.draw()
         
         return fig
         
@@ -595,16 +632,16 @@ class PrimBox(object):
     def formatter(self, **kwargs):
         i = kwargs.get("ind")[0]
         data = self.peeling_trajectory.ix[i]
-        label = "Box %d\nCoverage: %2.2f\nDensity: %2.2f\nMass: %2.2f\nRes Dim: %2.2f" % (i, data["coverage"], data["density"], data["mass"], data["res dim"])
+        label = "Box %d\nCoverage: %2.1f%%\nDensity: %2.1f%%\nMass: %2.1f%%\nRes Dim: %d" % (i, 100*data["coverage"], 100*data["density"], 100*data["mass"], data["res dim"])
         return label
     
     def handle_click(self, event):
-        if event.mouseevent.dblclick:
-            i = event.ind[0]
-            self.select(i)
+        #if event.mouseevent.dblclick:
+        i = event.ind[0]
+        self.select(i)
             
-            if event.mouseevent.button == 1:
-                self.show_box_details().show()
+        if event.mouseevent.button == 1:
+            self.show_box_details().show()
     
     def show_tradeoff(self):
         '''Visualize the trade off between coverage and density. Color is used

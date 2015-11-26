@@ -8,7 +8,9 @@ response = df["x1"] * df["x2"] + .2*df["x3"] > 0.5
 
 p = prim.Prim(df.to_records(), response.values, threshold=0.95, peel_alpha=0.1)
 box = p.find_box()
-box.show_tradeoff().savefig("tradeoff.png")
+box.select(1)
+#box.show_tradeoff().savefig("tradeoff.png")
+box.show_box_details()
 #box.show_box_details()
 #fig = box.show_pairs_scatter()
 #fig.set_size_inches((12, 12))
