@@ -105,12 +105,6 @@ def get_quantile(data, quantile):
 def _pair_wise_scatter(x,y, box_lim, restricted_dims, grid=None):
     ''' helper function for pair wise scatter plotting
     
-    #TODO the cases of interest should be in red rather than in blue
-    # this will give a nice visual insight into the quality of the box
-    # currently it is done through the face color being white or blue
-    # this is not very clear
-    
-    
     Parameters
     ----------
     x : numpy structured array
@@ -147,7 +141,7 @@ def _pair_wise_scatter(x,y, box_lim, restricted_dims, grid=None):
             x_1 = x_n[field2]
             x_2 = x_n[field1]
             
-            if field1 == field2:
+            if field1 == field2 and not len(restricted_dims) == 1:
                 ec = 'white'
             elif n == 0:
                 ec = 'b'
@@ -159,18 +153,19 @@ def _pair_wise_scatter(x,y, box_lim, restricted_dims, grid=None):
         ax.autoscale(tight=True)
 
         # draw boxlim
-        if field1 != field2:
+        if field1 != field2 or len(restricted_dims) == 1:
             x_1 = box_lim[field2]
             x_2 = box_lim[field1]
-
+    
             for n in [0,1]:
                 ax.plot(x_1,
-                    [x_2[n], x_2[n]], c='k', linewidth=3)
+                        [x_2[n], x_2[n]], c='k', linewidth=3)
                 ax.plot([x_1[n], x_1[n]],
-                    x_2, c='k', linewidth=3)
+                        x_2, c='k', linewidth=3)
             
 #       #reuse labeling function from pairs_plotting
-        pairs_plotting.do_text_ticks_labels(ax, i, j, field1, field2, None, 
+        if len(restricted_dims) > 1:
+            pairs_plotting.do_text_ticks_labels(ax, i, j, field1, field2, None, 
                                             restricted_dims)
             
     return figure
@@ -278,6 +273,7 @@ class PrimBox(object):
         
         stats = self.peeling_trajectory.iloc[i].to_dict()
         stats['restricted_dim'] = stats['res dim']
+        print stats
 
         qp_values = self._calculate_quasi_p(i)
         uncs = [(key, value) for key, value in qp_values.items()]
@@ -295,6 +291,7 @@ class PrimBox(object):
         '''Helper function for visualizing box statistics in 
         table form'''
         #make the descriptive statistics for the box
+        i = 19
         print(self.peeling_trajectory.iloc[i])
         print()
         
@@ -308,19 +305,13 @@ class PrimBox(object):
         for unc in uncs:
             values = self.box_lims[i][unc][:]
             box_lim.loc[unc] = [values[0], values[1], qp_values[unc]]
-        
+            
+        print box_lim["box 19"]["x1"]
+            
         print(box_lim)
         print()
         
-    def next(self, event):
-        i = (self._cur_box + 1) % self.peeling_trajectory.shape[0]
-        self.select(i)
-        self.show_box_details(fig=event.canvas.figure)
-        
-    def prev(self, event):
-        i = (self._cur_box - 1) % self.peeling_trajectory.shape[0]
-        self.select(i)
-        self.show_box_details(fig=event.canvas.figure)
+
         
     def show_box_details(self, fig=None):
         i = self._cur_box
@@ -331,7 +322,6 @@ class PrimBox(object):
         n = len(uncs)
         
         if fig is not None:
-            print "Closing"
             plt.figure(fig.number)
             plt.clf()
         else:
@@ -375,13 +365,23 @@ class PrimBox(object):
                                 colWidths=[0.3, 0.7],
                                 loc='center'))
         ax2.set_title("Statistics", y=0.7)
+        
+        def next(event):
+            i = (self._cur_box + 1) % self.peeling_trajectory.shape[0]
+            self.select(i)
+            self.show_box_details(fig=event.canvas.figure)
+            
+        def prev(event):
+            i = (self._cur_box - 1) % self.peeling_trajectory.shape[0]
+            self.select(i)
+            self.show_box_details(fig=event.canvas.figure)
 
         axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
         axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
         self.bnext = Button(axnext, "Next")
         self.bprev = Button(axprev, "Prev")
-        self.bnext.on_clicked(self.next)
-        self.bprev.on_clicked(self.prev)
+        self.bnext.on_clicked(next)
+        self.bprev.on_clicked(prev)
         
         plt.subplots_adjust(top=0.85)
         plt.draw()
@@ -411,6 +411,7 @@ class PrimBox(object):
         
         plt.bar(left, 
                 height,
+                width = 0.6,
                 bottom = bottom,
                 align="center")
         plt.ylim(0, 1)
@@ -425,15 +426,17 @@ class PrimBox(object):
         ax = plt.gca()
         
         for i, _ in enumerate(uncs):
-            ax.text(i,
-                    norm_box_lim[i][0]-0.01, "%0.2f" % norm_box_lim[i][0],
+            ax.text(i - 0.15,
+                    norm_box_lim[i][0], "%0.2f" % norm_box_lim[i][0],
                     horizontalalignment='center',
-                    verticalalignment='top')
+                    verticalalignment='bottom',
+                    color='w')
             
-            ax.text(i,
+            ax.text(i + 0.15,
                     norm_box_lim[i][1], "%0.2f" % norm_box_lim[i][1],
                     horizontalalignment='center',
-                    verticalalignment='bottom')
+                    verticalalignment='top',
+                    color='w')
             
         return fig
         
@@ -727,7 +730,7 @@ class PrimBox(object):
         and the boxlims superimposed on top.
         
         '''   
-        fig = _pair_wise_scatter(self.prim.x, self.prim.y, self.box_lim, 
+        fig = _pair_wise_scatter(self.prim.x[self.prim.yi_remaining], self.prim.y[self.prim.yi_remaining], self.box_lim, 
                            sdutil._determine_restricted_dims(self.box_lim, 
                                                         self.prim.box_init),
                             grid = grid)
@@ -757,6 +760,7 @@ class PrimBox(object):
         box_lim = self.box_lims[i]
         restricted_dims = list(sdutil._determine_restricted_dims(box_lim,
                                                            self.prim.box_init))
+        print restricted_dims
         
         # total nr. of cases in box
         Tbox = self.peeling_trajectory['mass'][i] * self.prim.n 
