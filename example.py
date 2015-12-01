@@ -1,23 +1,28 @@
+import os
 import numpy as np
 import pandas as pd
-from ema_workbench import prim
+from ema_workbench import prim_alg
 import matplotlib.pyplot as plt
 import logging
 import ema_workbench
 
 logging.basicConfig(level=logging.INFO)
 
-df = pd.DataFrame(np.random.rand(1000, 3), columns=["x1", "x2", "x3"])
+if os.path.exists("pickle.dat"):
+    df = pd.read_pickle("pickle.dat")
+else:
+    df = pd.DataFrame(np.random.rand(1000, 3), columns=["x1", "x2", "x3"])
+    df.to_pickle("pickle.dat")
+    
 response = df["x1"] * df["x2"] + .2*df["x3"] > 0.5
 
-print df.to_records(index=False).dtype
-p = prim.Prim(df.to_records(index=False), response.values, threshold=0.5, peel_alpha=0.1)
+p = prim_alg.Prim(df, lambda x : x["x1"]*x["x2"] + 0.2*x["x3"], threshold=0.5, peel_alpha=0.1)
 box = p.find_box()
 #box.inspect()
 #print
 #print "a:", box.inspect()
 #print box.box_lims
-box.inspect()
+box.show_tradeoff()
 # box.select(box._cur_box)
 # box.show_box_details()
 # box.show_box_details()
@@ -40,8 +45,8 @@ plt.show()
 #     df.drop(lever, axis=1, inplace=True)
 # for response in model.responses:
 #     df.drop(response.name, axis=1, inplace=True)
-# prim = Prim(df.to_records(), metric, threshold=0.8, peel_alpha=0.1)
-# box1 = prim.find_box()
+# prim_alg = Prim(df.to_records(), metric, threshold=0.8, peel_alpha=0.1)
+# box1 = prim_alg.find_box()
 # box1.show_tradeoff().savefig("tradeoff.png")
 # fig = box1.show_pairs_scatter()
 # fig.set_size_inches((12, 12))
