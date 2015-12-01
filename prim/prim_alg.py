@@ -28,9 +28,9 @@ import numpy as np
 import numpy.lib.recfunctions as rf
 
 import pandas as pd
-from ema_workbench.exceptions import PRIMError
-from ema_workbench.prim_box import PrimBox
-from ema_workbench import scenario_discovery_util as sdutil
+from prim.exceptions import PRIMError
+from prim.prim_box import PrimBox
+from prim import scenario_discovery_util as sdutil
 
 # Created on 22 feb. 2013
 # 
@@ -39,9 +39,6 @@ from ema_workbench import scenario_discovery_util as sdutil
 LENIENT2 = 'lenient2'
 LENIENT1 = 'lenient1'
 ORIGINAL = 'original'
-
-PRECISION = '.2f'
-
 
 def get_quantile(data, quantile):
     '''

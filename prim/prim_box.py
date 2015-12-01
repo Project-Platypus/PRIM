@@ -28,10 +28,10 @@ import mpldatacursor
 from operator import itemgetter
 from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
-from ema_workbench.exceptions import PRIMError
-from ema_workbench import pairs_plotting
-from ema_workbench import scenario_discovery_util as sdutil
-from ema_workbench.plotting_util import make_legend
+from prim.exceptions import PRIMError
+from prim import pairs_plotting
+from prim import scenario_discovery_util as sdutil
+from prim.plotting_util import make_legend
 
 try:
     import mpld3

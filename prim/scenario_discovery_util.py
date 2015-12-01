@@ -11,7 +11,7 @@ import numpy as np
 import numpy.lib.recfunctions as recfunctions
 import pandas as pd
 
-from ema_workbench.plotting_util import COLOR_LIST
+from prim.plotting_util import COLOR_LIST
 
 # Created on May 24, 2015
 # 

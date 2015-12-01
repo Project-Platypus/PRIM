@@ -1,10 +1,9 @@
 import os
 import numpy as np
 import pandas as pd
-from ema_workbench import prim_alg
 import matplotlib.pyplot as plt
 import logging
-import ema_workbench
+import prim
 
 logging.basicConfig(level=logging.INFO)
 
@@ -14,9 +13,7 @@ else:
     df = pd.DataFrame(np.random.rand(1000, 3), columns=["x1", "x2", "x3"])
     df.to_pickle("pickle.dat")
     
-response = df["x1"] * df["x2"] + .2*df["x3"] > 0.5
-
-p = prim_alg.Prim(df, lambda x : x["x1"]*x["x2"] + 0.2*x["x3"], threshold=0.5, peel_alpha=0.1)
+p = prim.Prim(df, lambda x : x["x1"]*x["x2"] + 0.2*x["x3"], threshold=0.5, threshold_type="<")
 box = p.find_box()
 #box.inspect()
 #print
