@@ -116,7 +116,6 @@ class CurEntry(object):
         self.name = name
         
     def __get__(self, instance, owner):
-        print instance.peeling_trajectory[self.name]
         return instance.peeling_trajectory[self.name][instance._cur_box]
     
     def __set__(self, instance, value):
@@ -211,7 +210,6 @@ class PrimBox(object):
         
         stats = self.peeling_trajectory.iloc[i].to_dict()
         stats['restricted_dim'] = stats['res dim']
-        print stats
 
         qp_values = self._calculate_quasi_p(i)
         uncs = [(key, value) for key, value in qp_values.items()]
@@ -564,8 +562,20 @@ class PrimBox(object):
         
         fig = plt.gcf()
         
-        make_legend(['mean', 'mass', 'coverage', 'density', 'restricted_dim'],
-                    ax, ncol=5, alpha=1)
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height*0.2, box.width, box.height*0.8])
+        
+        ax.legend(['mean', 'mass', 'coverage', 'density', 'restricted_dim'],
+                  ncol=3,
+                  loc=9,
+                  borderaxespad=0.1,
+                  bbox_to_anchor=(0.5, -0.2)
+                      #mode='expand',
+                      #bbox_to_anchor=(0., 1.1, 1., .102))
+                      )
+        
+       # make_legend(['mean', 'mass', 'coverage', 'density', 'restricted_dim'],
+       #             ax, ncol=5, alpha=1)
         return fig
     
     def formatter(self, **kwargs):

@@ -13,13 +13,15 @@ else:
     df = pd.DataFrame(np.random.rand(1000, 3), columns=["x1", "x2", "x3"])
     df.to_pickle("pickle.dat")
     
-p = prim.Prim(df, lambda x : x["x1"]*x["x2"] + 0.2*x["x3"], threshold=0.5, threshold_type="<")
+p = prim.Prim(df, lambda x : x["x1"]*x["x2"] + 0.2*x["x3"], threshold=0.5, threshold_type=">")
+
 box = p.find_box()
+box.show_ppt()
 #box.inspect()
 #print
 #print "a:", box.inspect()
 #print box.box_lims
-box.show_tradeoff()
+#box.show_tradeoff()
 # box.select(box._cur_box)
 # box.show_box_details()
 # box.show_box_details()

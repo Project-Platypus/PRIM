@@ -13,8 +13,7 @@ The implementation is designed for interactive use in combination with the
 ipython notebook. 
 
 '''
-from __future__ import (absolute_import, division,
-                        unicode_literals)
+from __future__ import absolute_import, division
 import six
 
 from operator import itemgetter
@@ -56,8 +55,7 @@ def get_quantile(data, quantile):
     assert quantile<1
  
     data = np.sort(data)
-    print type(data)
-    
+
     i = (len(data)-1)*quantile
     index_lower =  int(math.floor(i))
     index_higher = int(math.ceil(i))
@@ -147,7 +145,6 @@ class Prim(sdutil.OutputFormatterMixin):
         elif six.callable(y):
             fun = y
             y = np.apply_along_axis(fun, 0, x)
-            print y   
         elif isinstance(y, pd.DataFrame) or isinstance(y, pd.Series):
             y = y.values
         else:
