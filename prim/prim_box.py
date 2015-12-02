@@ -1,4 +1,5 @@
-# Copyright 2015 David Hadka
+# Originally written by Jan Kwakkel as part of EMA Workbench.  Modified and
+# extracted into a standalone Python module by David Hadka.
 #
 # This file is part of the PRIM module.
 #
