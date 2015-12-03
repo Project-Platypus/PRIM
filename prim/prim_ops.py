@@ -22,7 +22,7 @@ from __future__ import absolute_import, division
 import copy
 import math
 import numpy as np
-from prim import scenario_discovery_util as sdutil
+from prim.scenario_discovery_util import in_box
 
 def get_quantile(data, quantile):
     """Computes the given quantile of the dataset.
@@ -270,7 +270,7 @@ def real_paste(prim, box, name):
             paste_box[name][0] = paste_box[name][1]
             paste_box[name][1] = init_limits[name][1]
             
-            indices = sdutil._in_box(x, paste_box)
+            indices = in_box(x, paste_box)
             data = x[indices][name]
             
             if data.shape[0] > 0:
@@ -283,7 +283,7 @@ def real_paste(prim, box, name):
             paste_box[name][0] = init_limits[name][0]
             paste_box[name][1] = box_paste[name][0]
             
-            indices = sdutil._in_box(x, paste_box)
+            indices = in_box(x, paste_box)
             data = x[indices][name]
             
             
@@ -300,7 +300,7 @@ def real_paste(prim, box, name):
             paste_value = np.int(paste_value)
         
         box_paste[name][1 if direction == 'upper' else 0] = paste_value
-        indices = sdutil._in_box(x, box_paste)
+        indices = in_box(x, box_paste)
         indices = prim.yi_remaining[indices]
         
         pastes.append((indices, box_paste))
@@ -343,7 +343,7 @@ def categorical_paste(prim, box, name):
             box_paste = np.copy(limits)
             box_paste[name][:] = paste
             
-            indices = sdutil._in_box(x, box_paste)
+            indices = in_box(x, box_paste)
             indices = prim.yi_remaining[indices]
             
             pastes.append((indices, box_paste))

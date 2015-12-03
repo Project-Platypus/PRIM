@@ -28,10 +28,12 @@ import numpy.lib.recfunctions as rf
 import pandas as pd
 from prim.exceptions import PRIMError
 from prim.prim_box import PrimBox
-from prim import scenario_discovery_util as sdutil
 from prim.prim_ops import real_peel, discrete_peel, categorical_peel
 from prim.prim_ops import real_paste, categorical_paste
 from prim.prim_objfcn import lenient1
+from prim.scenario_discovery_util import (make_box, compare,
+        determine_nr_restricted_dims, determine_restricted_dims,
+        OutputFormatterMixin)
 
 # Created on 22 feb. 2013
 # 
@@ -40,7 +42,7 @@ from prim.prim_objfcn import lenient1
 
 
 
-class Prim(sdutil.OutputFormatterMixin):
+class Prim(OutputFormatterMixin):
     """Patient Rule Induction Method.
     
     This implementation of PRIM is designed for scenario discovery.  It is based
@@ -228,7 +230,7 @@ class Prim(sdutil.OutputFormatterMixin):
         self.t_coi = self.determine_coi(self.yi)
         
         # initial box that contains all data
-        self._box_init = sdutil._make_box(self.x)
+        self._box_init = make_box(self.x)
     
         # make a list in which the identified boxes can be put
         self._boxes = []
@@ -252,7 +254,7 @@ class Prim(sdutil.OutputFormatterMixin):
         
         if not box_lims:
             return [self.box_init]
-        elif not np.all(sdutil._compare(box_lims[-1], self.box_init)):
+        elif not np.all(compare(box_lims[-1], self.box_init)):
             box_lims.append(self.box_init)
             
         return box_lims 
@@ -368,7 +370,7 @@ class Prim(sdutil.OutputFormatterMixin):
         self.row_names = row_names
         
         self.x = np.ma.array(rotated_experiments)
-        self.box_init = sdutil._make_box(self.x)
+        self.box_init = make_box(self.x)
     
     def find_box(self):
         """Execute one iteration of the PRIM algorithm.
@@ -517,8 +519,8 @@ class Prim(sdutil.OutputFormatterMixin):
         for i, box_lim in possible_peels:
             obj = self.obj_func(self.y[box.yi], self.y[i])
             non_res_dim = len(self.x.dtype.descr)-\
-                          sdutil._determine_nr_restricted_dims(box_lim, 
-                                                               self._box_init)
+                          determine_nr_restricted_dims(box_lim, 
+                                                       self._box_init)
             score = (obj, non_res_dim, box_lim, i)
             scores.append(score)
 
@@ -541,8 +543,8 @@ class Prim(sdutil.OutputFormatterMixin):
         type specific helper methods.'''
         
         x = self.x[self.yi_remaining]
-        res_dim = sdutil._determine_restricted_dims(box._box_lims[-1],
-                                                    self._box_init)
+        res_dim = determine_restricted_dims(box._box_lims[-1],
+                                            self._box_init)
         
         #identify all possible pastes
         possible_pastes = []
@@ -568,8 +570,8 @@ class Prim(sdutil.OutputFormatterMixin):
             i, box_lim = entry
             obj = self.obj_func(self.y[box.yi], self.y[i])
             non_res_dim = len(x.dtype.descr)-\
-                          sdutil._determine_nr_restricted_dims(box_lim,
-                                                               self._box_init)
+                          determine_nr_restricted_dims(box_lim,
+                                                       self._box_init)
             score = (obj, non_res_dim, box_lim, i)
             scores.append(score)
 

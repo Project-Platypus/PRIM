@@ -31,8 +31,9 @@ from operator import itemgetter
 from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
 from prim.exceptions import PRIMError
-from prim import scenario_discovery_util as sdutil
 from prim.plotting_util import pairwise_scatter
+from prim.scenario_discovery_util import (in_box, normalize, setup_figure,
+        determine_nr_restricted_dims, determine_restricted_dims)
 
 try:
     import mpld3
@@ -260,7 +261,7 @@ class PrimBox(object):
         
         box_lim_init = self.prim._box_init
         box_lim = self._box_lims[i]
-        norm_box_lim =  sdutil._normalize(box_lim, box_lim_init, uncs)
+        norm_box_lim =  normalize(box_lim, box_lim_init, uncs)
         
         left = []
         height = []
@@ -314,9 +315,9 @@ class PrimBox(object):
         # plot.
         box_lim_init = self.prim.box_init
         box_lim = self._box_lims[i]
-        norm_box_lim =  sdutil._normalize(box_lim, box_lim_init, uncs)
+        norm_box_lim =  normalize(box_lim, box_lim_init, uncs)
         
-        fig, ax = sdutil._setup_figure(uncs)
+        fig, ax = setup_figure(uncs)
 
         for j, u in enumerate(uncs):
             # we want to have the most restricted dimension
@@ -415,8 +416,8 @@ class PrimBox(object):
         if self._frozen:
             raise PRIMError("box has been frozen because PRIM has found at least one more recent box")
         
-        indices = sdutil._in_box(self.prim.x[self.prim.yi_remaining], 
-                                 self._box_lims[i])
+        indices = in_box(self.prim.x[self.prim.yi_remaining], 
+                         self._box_lims[i])
         self.yi = self.prim.yi_remaining[indices]
         self._cur_box = i
 
@@ -435,8 +436,8 @@ class PrimBox(object):
         new_box_lim = copy.deepcopy(self._box_lims[self._cur_box])
         new_box_lim[name][:] = self._box_lims[0][name][:]
         
-        indices = sdutil._in_box(self.prim.x[self.prim.yi_remaining], 
-                                 new_box_lim)
+        indices = in_box(self.prim.x[self.prim.yi_remaining], 
+                         new_box_lim)
         indices = self.prim.yi_remaining[indices]
         
         self.update(new_box_lim, indices)
@@ -463,7 +464,7 @@ class PrimBox(object):
         stats = {"coverage" : coi/self.prim.t_coi, 
                 "density" : coi/y.shape[0],  
                 "mean" : np.mean(y),
-                "res dim" : sdutil._determine_nr_restricted_dims(
+                "res dim" : determine_nr_restricted_dims(
                         self._box_lims[-1], 
                         self.prim._box_init),
                 "mass" : y.shape[0]/self.prim.n}
@@ -634,7 +635,7 @@ class PrimBox(object):
         fig = pairwise_scatter(self.prim.x[self.prim.yi_remaining],
                                 self.prim.y[self.prim.yi_remaining],
                                 self._box_lims[self._cur_box], 
-                                sdutil._determine_restricted_dims(
+                                determine_restricted_dims(
                                         self._box_lims[self._cur_box], 
                                         self.prim._box_init),
                                 grid = grid)
@@ -663,7 +664,7 @@ class PrimBox(object):
         from scipy.stats import binom
         
         box_lim = self._box_lims[i]
-        restricted_dims = list(sdutil._determine_restricted_dims(
+        restricted_dims = list(determine_restricted_dims(
                 box_lim,
                 self.prim._box_init))
         
@@ -679,8 +680,8 @@ class PrimBox(object):
             temp_box = copy.deepcopy(box_lim)
             temp_box[u] = self._box_lims[0][u]
         
-            indices = sdutil._in_box(self.prim.x[self.prim.yi_remaining], 
-                                     temp_box)
+            indices = in_box(self.prim.x[self.prim.yi_remaining], 
+                             temp_box)
             indices = self.prim.yi_remaining[indices]
             
             # total nr. of cases in box with one restriction removed

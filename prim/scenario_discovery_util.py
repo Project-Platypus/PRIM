@@ -1,35 +1,18 @@
 '''
 Scenario discovery utilities used by both :mod:`cart` and :mod:`prim`
 '''
-from __future__ import (absolute_import, print_function, division,
-                        unicode_literals)
+from __future__ import absolute_import, print_function, division
+
 import abc
-import copy
 import logging
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.lib.recfunctions as recfunctions
 import pandas as pd
-
 from prim.plotting_util import COLOR_LIST
 
-# Created on May 24, 2015
-# 
-# .. codeauthor:: jhkwakkel <j.h.kwakkel (at) tudelft (dot) nl>
-
-REGRESSION = 'regression'
-'''constant indicating regression mode'''
-
-BINARY = 'binary'
-'''constant indicating binary classification mode. This is the most
-common used mode in scenario discovery'''
-
-CLASSIFICATION = 'classification'
-'''constant indicating classification mode'''
-
-
-def _get_sorted_box_lims(boxes, box_init):
+def get_sorted_box_lims(boxes, box_init):
     '''Sort the uncertainties for each box in boxes based on a normalization
     given box_init. Unrestricted dimensions are dropped. The sorting is based
     on the normalization of the first box in boxes. 
@@ -50,13 +33,13 @@ def _get_sorted_box_lims(boxes, box_init):
     # in one or more boxes
     uncs = set()
     for box in boxes:
-        us  = _determine_restricted_dims(box, box_init).tolist()
+        us  = determine_restricted_dims(box, box_init).tolist()
         uncs = uncs.union(us)
     uncs = np.asarray(list(uncs))
 
     # normalize the range for the first box
     box_lim = boxes[0]
-    nbl = _normalize(box_lim, box_init, uncs)
+    nbl = normalize(box_lim, box_init, uncs)
     box_size = nbl[:,1]-nbl[:,0]
     
     # sort the uncertainties based on the normalized size of the 
@@ -67,7 +50,7 @@ def _get_sorted_box_lims(boxes, box_init):
     return box_lims, uncs.tolist()
 
 
-def _make_box(x):
+def make_box(x):
     '''
     Make a box that encompasses all the data
     
@@ -107,7 +90,7 @@ def _make_box(x):
     return box  
 
 
-def _normalize(box_lim, box_init, uncertainties):
+def normalize(box_lim, box_init, uncertainties):
     '''Normalize the given box lim to the unit interval derived
     from box init for the specified uncertainties.
     
@@ -149,7 +132,7 @@ def _normalize(box_lim, box_init, uncertainties):
     return norm_box_lim
 
 
-def _determine_restricted_dims(box_lims, box_init):
+def determine_restricted_dims(box_lims, box_init):
     '''
     
     determine which dimensions of the given box are restricted compared 
@@ -164,14 +147,14 @@ def _determine_restricted_dims(box_lims, box_init):
     
     '''
 
-    logical = _compare(box_init, box_lims)
+    logical = compare(box_init, box_lims)
     u = np.asarray(recfunctions.get_names(box_lims.dtype), 
                    dtype=object)
     dims = u[logical==False]
     return dims
 
 
-def _determine_nr_restricted_dims(box_lims, box_init):
+def determine_nr_restricted_dims(box_lims, box_init):
     '''
     
     determine the number of restriced dimensions of a box given
@@ -186,9 +169,9 @@ def _determine_nr_restricted_dims(box_lims, box_init):
     
     '''
 
-    return _determine_restricted_dims(box_lims, box_init).shape[0]
+    return determine_restricted_dims(box_lims, box_init).shape[0]
 
-def _compare(a, b):
+def compare(a, b):
     '''compare two boxes, for each dimension return True if the
     same and false otherwise'''
     dtypesDesc = a.dtype.descr
@@ -201,7 +184,7 @@ def _compare(a, b):
     return logical
 
 
-def _setup_figure(uncs):
+def setup_figure(uncs):
     '''
     
     helper function for creating the basic layout for the figures that
@@ -226,7 +209,7 @@ def _setup_figure(uncs):
     return fig, ax
 
 
-def _in_box(x, boxlim):
+def in_box(x, boxlim):
     '''
      
     returns the indices of the data points that are within the 
@@ -302,7 +285,7 @@ class OutputFormatterMixin(object):
             
         # determine the restricted dimensions
         # print only the restricted dimension
-        box_lims, uncs = _get_sorted_box_lims(boxes, _make_box(self.x))
+        box_lims, uncs = get_sorted_box_lims(boxes, make_box(self.x))
         nr_boxes = len(boxes)
         dtype = float
         index = ["box {}".format(i+1) for i in range(nr_boxes)]
@@ -343,18 +326,18 @@ class OutputFormatterMixin(object):
         together : bool, otional
         
         '''
-        box_init = _make_box(self.x)
-        box_lims, uncs = _get_sorted_box_lims(self.boxes, box_init)
+        box_init = make_box(self.x)
+        box_lims, uncs = get_sorted_box_lims(self.boxes, box_init)
 
         # normalize the box lims
         # we don't need to show the last box, for this is the 
         # box_init, which is visualized by a grey area in this
         # plot.
-        norm_box_lims =  [_normalize(box_lim, box_init, uncs) for 
-                                        box_lim in box_lims[0:-1]]
+        norm_box_lims =  [normalize(box_lim, box_init, uncs) for 
+                box_lim in box_lims[0:-1]]
                         
         if together:
-            fig, ax = _setup_figure(uncs)
+            fig, ax = setup_figure(uncs)
             
             for i, u in enumerate(uncs):
                 # we want to have the most restricted dimension
@@ -370,7 +353,7 @@ class OutputFormatterMixin(object):
         else:
             figs = []
             for j, norm_box_lim in enumerate(norm_box_lims):
-                fig, ax = _setup_figure(uncs)
+                fig, ax = setup_figure(uncs)
                 figs.append(fig)
                 for i, u in enumerate(uncs):
                     xi = len(uncs) - i - 1
