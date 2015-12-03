@@ -30,9 +30,8 @@ from operator import itemgetter
 from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
 from prim.exceptions import PRIMError
-from prim import pairs_plotting
 from prim import scenario_discovery_util as sdutil
-from prim.plotting_util import make_legend
+from prim.plotting_util import do_text_ticks_labels
 
 try:
     import mpld3
@@ -41,7 +40,7 @@ except ImportError:
     global mpld3
     mpld3 = None
     
-def _pair_wise_scatter(x,y, box_lim, restricted_dims, grid=None):
+def _pair_wise_scatter(x, y, box_lim, restricted_dims, grid=None):
     ''' helper function for pair wise scatter plotting
     
     Parameters
@@ -89,13 +88,21 @@ def _pair_wise_scatter(x,y, box_lim, restricted_dims, grid=None):
             
             ax.scatter(x_1, x_2, facecolor=ec, edgecolor=ec, s=10)
             
+            if x.dtype.fields[field2][0].name == 'bool':
+                ax.set_xticks([0, 1])
+                ax.set_xticklabels(["False", "True"])
+                
+            if x.dtype.fields[field1][0].name == 'bool':
+                ax.set_yticks([0, 1])
+                ax.set_yticklabels(["False", "True"])
+            
         ax.autoscale(tight=True)
 
         # draw boxlim
         if field1 != field2 or len(restricted_dims) == 1:
             x_1 = box_lim[field2]
             x_2 = box_lim[field1]
-    
+      
             for n in [0,1]:
                 ax.plot(x_1,
                         [x_2[n], x_2[n]], c='k', linewidth=3)
@@ -104,8 +111,8 @@ def _pair_wise_scatter(x,y, box_lim, restricted_dims, grid=None):
             
 #       #reuse labeling function from pairs_plotting
         if len(restricted_dims) > 1:
-            pairs_plotting.do_text_ticks_labels(ax, i, j, field1, field2, None, 
-                                            restricted_dims)
+            do_text_ticks_labels(ax, i, j, field1, field2, None,
+                                 restricted_dims)
             
     return figure
 
@@ -179,18 +186,10 @@ class PrimBox(object):
         
         # indices van data in box
         self.update(box_lims, indices)
-
-    def __getattr__(self, name):
-        '''
-        used here to give box_lim same behaviour as coverage, density, mean
-        res_dim, and mass. That is, it will return the box lim associated with
-        the currently selected box. 
-        '''
         
-        if name=='box_lim':
-            return self.box_lims[self._cur_box]
-        else:
-            raise AttributeError
+    @property
+    def box_lim(self):
+        return self.box_lims[self._cur_box]
 
     def inspect(self, i=None, style='table'):
         '''
@@ -228,7 +227,6 @@ class PrimBox(object):
         '''Helper function for visualizing box statistics in 
         table form'''
         #make the descriptive statistics for the box
-        i = 19
         print(self.peeling_trajectory.iloc[i])
         print()
         
@@ -570,13 +568,8 @@ class PrimBox(object):
                   ncol=3,
                   loc=9,
                   borderaxespad=0.1,
-                  bbox_to_anchor=(0.5, -0.2)
-                      #mode='expand',
-                      #bbox_to_anchor=(0., 1.1, 1., .102))
-                      )
+                  bbox_to_anchor=(0.5, -0.2))
         
-       # make_legend(['mean', 'mass', 'coverage', 'density', 'restricted_dim'],
-       #             ax, ncol=5, alpha=1)
         return fig
     
     def formatter(self, **kwargs):

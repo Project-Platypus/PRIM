@@ -69,15 +69,33 @@ class Prim(sdutil.OutputFormatterMixin):
     '''
     
     
-    PEEL_OPERATIONS = {'object': categorical_peel,
-                       'int64': discrete_peel,
-                       'int32': discrete_peel,
-                       'float64': real_peel}
+    PEEL_OPERATIONS = {'object' : categorical_peel,
+                       'bool' : categorical_peel,
+                       'int8' : discrete_peel,
+                       'int16' : discrete_peel,
+                       'int32' : discrete_peel,
+                       'int64' : discrete_peel,
+                       'uint8' : discrete_peel,
+                       'uint16' : discrete_peel,
+                       'uint32' : discrete_peel,
+                       'uint64' : discrete_peel,
+                       'float16' : real_peel,
+                       'float32' : real_peel,
+                       'float64' : real_peel}
 
-    PASTE_OPERATIONS = {'object': categorical_paste,
-                        'int32': real_paste,
-                        'int64': real_paste,
-                        'float64': real_paste} 
+    PASTE_OPERATIONS = {'object' : categorical_paste,
+                        'bool' : categorical_paste,
+                        'int8' : discrete_peel,
+                        'int16' : real_paste,
+                        'int32' : real_paste,
+                        'int64' : real_paste,
+                        'uint8' : discrete_peel,
+                        'uint16' : real_paste,
+                        'uint32' : real_paste,
+                        'uint64' : real_paste,
+                        'float16' : real_paste,
+                        'float32' : real_paste,
+                        'float64' : real_paste} 
     
     def __init__(self, 
                  x,
@@ -413,7 +431,7 @@ class Prim(sdutil.OutputFormatterMixin):
             name = entry[0]
             dtype = self.x.dtype.fields.get(name)[0].name
             
-            if dtype not in self.PEEL_OPERATIONS:
+            if dtype not in Prim.PEEL_OPERATIONS:
                 raise PRIMError("no peel operation defined for type %s" % dtype)
             
             peels = Prim.PEEL_OPERATIONS[dtype](self, box, name)
@@ -464,10 +482,10 @@ class Prim(sdutil.OutputFormatterMixin):
             logging.getLogger(__name__).info("pasting "+u)
             dtype = self.x.dtype.fields.get(u)[0].name
             
-            if dtype not in self.PASTE_OPERATIONS:
+            if dtype not in Prim.PASTE_OPERATIONS:
                 raise PRIMError("no paste operation defined for type %s" % dtype)
             
-            pastes = self.PASTE_OPERATIONS[dtype](self, box, u)
+            pastes = Prim.PASTE_OPERATIONS[dtype](self, box, u)
             [possible_pastes.append(entry) for entry in pastes] 
             
         # if there are no pastes identified, return the unchanged box

@@ -190,6 +190,7 @@ def categorical_peel(prim, box, name):
     # get the values within the box and the categories contained within the box
     x = prim.x[box.yi][name]
     entries = box.box_lims[-1][name][0]
+    print prim.box_init
     
     # peel each category contained in the box
     peels = []
@@ -308,10 +309,12 @@ def categorical_paste(prim, box, name):
     """
     x = prim.x[prim.yi_remaining]
     limits = box.box_lims[-1]
-    init_limits = prim.box_init
     
     c_in_b = limits[name][0]
-    c_t = init_limits[0]
+    c_t = prim.box_init[name][0]
+    
+    print(c_in_b)
+    print(c_t)
     
     pastes = []
     
