@@ -16,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import absolute_import, division
 
 import six
@@ -219,16 +220,36 @@ class Prim(sdutil.OutputFormatterMixin):
     
     @property
     def boxes(self):
+        """Returns all PRIM boxes found thus far.
+        
+        Returns the PRIM boxes found and selected using :meth:`find_box`.  If
+        there are remaining cases of interest in the dataset, a final box is
+        included the remaining cases.
+        
+        Returns
+        -------
+        list of PRIM boxes
+        """
         box_lims = [box.box_lim for box in self._boxes]
         
         if not box_lims:
             return [self.box_init]
         elif not np.all(sdutil._compare(box_lims[-1], self.box_init)):
             box_lims.append(self.box_init)
+            
         return box_lims 
     
     @property
     def stats(self):
+        """Returns the statistics for all PRIM boxes found thus far.
+        
+        Returns the statistics for all PRIM boxes found and selected using
+        :meth:`find_box`.
+        
+        Returns
+        -------
+        list of dict containing the box statistics
+        """
         return [b.stats for b in self._boxes]
     
     def perform_pca(self, subsets=None, exclude=set()):
@@ -332,8 +353,15 @@ class Prim(sdutil.OutputFormatterMixin):
         self.box_init = sdutil._make_box(self.x)
     
     def find_box(self):
-        '''Execute one iteration of the PRIM algorithm. That is, find one
-        box, starting from the current state of Prim.'''
+        """Execute one iteration of the PRIM algorithm.
+        
+        Finds the next PRIM box starting from the current state of PRIM.  All
+        previous boxes are frozen and can no longer be modified.
+        
+        Returns
+        -------
+        the PRIM box, or None if there are no cases of interest remaining
+        """
         logger = logging.getLogger(__name__)
         
         # set the indices
@@ -356,18 +384,41 @@ class Prim(sdutil.OutputFormatterMixin):
         box = PrimBox(self, self._box_init, self.yi_remaining[:])
         
         #  perform peeling phase
+        logger.debug("peeling started")
         box = self._peel(box)
         logger.debug("peeling completed")
 
-        # perform pasting phase        
+        # perform pasting phase       
+        logger.debug("pasting started") 
         box = self._paste(box)
         logger.debug("pasting completed")
         
-        logger.info("""mean: %f, mass: %f, coverage: %f, density: %f restricted_dimensions: %d""" %
+        logger.info("mean: %f, mass: %f, coverage: %f, density: %f restricted_dimensions: %d" %
                     (box.mean, box.mass, box.coverage, box.density, box.res_dim))
         
         self._boxes.append(box)
         return box
+    
+    def find_all(self):
+        """Runs the entire PRIM algorithm to find all boxes.
+        
+        Iteratively calls :meth:`find_box` to generate all PRIM boxes.  This
+        method is provided for convenience and will select the last peeling
+        trajectory for every box.  Calling :meth:`find_box` is recommended as
+        it allows interactive selection of the desired peeling trajectory.
+        
+        Returns
+        -------
+        list of PRIM boxes
+        """
+        boxes = []
+        box = self.find_box()
+        
+        while box is not None:
+            boxes.append(box)
+            box = self.find_box()
+            
+        return boxes
 
     def determine_coi(self, indices):
         '''        

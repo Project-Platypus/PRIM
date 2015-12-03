@@ -1,20 +1,21 @@
-# Originally written by Jan Kwakkel as part of EMA Workbench.  Modified and
-# extracted into a standalone Python module by David Hadka.
+# The PRIM module for Python is a standalone version of the Patient Rule
+# Induction Method (PRIM) algorithm implemented in the EMA Workbench by Jan
+# Kwakkel, which is itself derived from the sdtoolkit R package developed by
+# RAND Corporation.  This standalone version of PRIM was created and maintained
+# by David Hadka.
 #
-# This file is part of the PRIM module.
-#
-# PRIM is free software: you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# PRIM is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with PRIM.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, division, print_function
 
