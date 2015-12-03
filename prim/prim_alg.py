@@ -1,13 +1,25 @@
+# The PRIM module for Python is a standalone version of the Patient Rule
+# Induction Method (PRIM) algorithm implemented in the EMA Workbench by Jan
+# Kwakkel, which is itself derived from the sdtoolkit R package developed by
+# RAND Corporation.  This standalone version of PRIM was created and maintained
+# by David Hadka.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 '''
 
-A scenario discovery oriented implementation of PRIM.
 
-The implementation of prim provided here is datatype aware, so
-categorical variables will be handled appropriately. It also uses a 
-non-standard objective function in the peeling and pasting phase of the
-algorithm. This algorithm looks at the increase in the mean divided 
-by the amount of data removed. So essentially, it uses something akin
-to the first order derivative of the original objective function. 
 
 The implementation is designed for interactive use in combination with the
 ipython notebook. 
@@ -40,34 +52,20 @@ from prim.prim_objfcn import lenient1
 
 
 class Prim(sdutil.OutputFormatterMixin):
-    '''Patient rule induction algorithm
+    """Patient Rule Induction Method.
     
-    The implementation of Prim is tailored to interactive use in the context
-    of scenario discovery
+    This implementation of PRIM is designed for scenario discovery.  It is based
+    on the following paper:
+    
+        Friedman and Fisher (1999).  "Bump Hunting in High-Dimensional Data."
+        Statistics and Computing, 9(2):123-143.
 
-    Parameters
-    ----------
-    x : structured array
-        the independent variables
-    y : 1d ndarray
-        the dependent variable
-    threshold : float
-                the coverage threshold that a box has to meet
-    obj_function : {LENIENT1, LENIENT2, ORIGINAL}
-                   the objective function used by PRIM. Defaults to a lenient 
-                   objective function based on the gain of mean divided by the 
-                   loss of mass. 
-    peel_alpha : float, optional 
-                 parameter controlling the peeling stage (default = 0.05). 
-    paste_alpha : float, optional
-                  parameter controlling the pasting stage (default = 0.05).
-    mass_min : float, optional
-               minimum mass of a box (default = 0.05). 
-    threshold_type : {ABOVE, BELOW}
-                     whether to look above or below the threshold value
-    
-    '''
-    
+    This implementation of PRIM is datatype aware, so discrete and categorical
+    variables will be handled appropriately.  Internally, this implementation
+    uses Numpy.  The class-level dicts PEEL_OPERATIONS and PASTE_OPERATIONS map
+    each Numpy datatype to a peeling or pasting operation appropriate for that
+    datatype.   
+    """
     
     PEEL_OPERATIONS = {'object': categorical_peel,
                        'int64': discrete_peel,
@@ -90,6 +88,41 @@ class Prim(sdutil.OutputFormatterMixin):
                  mass_min = 0.05, 
                  include = None,
                  exclude = None):
+        """Creates a new PRIM object.
+        
+        The PRIM object maintains the current state of the PRIM algorithm,
+        recording the PRIM boxes found thus far, the remaining (uncaptured)
+        cases of interest in the dataset, and provides methods for finding the
+        next PRIM box and viewing statistics.
+        
+        Parameters
+        ----------
+        x : a matrix-like object (pandas.DataFrame, numpy.recarray, etc.)
+            the independent variables
+        y : a list-like object, the column name (str), or callable
+            the dependent variable either provided as a list-like object
+            classifying the data into cases of interest (e.g., False/True),
+            a list-like object storing the raw variable value (in which case
+            a threshold must be given), a string identifying the dependent
+            variable in x, or a function called on each row of x to compute the
+            dependent variable
+        threshold : float
+            threshold for identifying cases of interest
+        threshold_type : str
+            comparison operator used whwen identifying cases of interest
+        obj_func : callable (default: lenient1)
+            a function that computes the objective function (peeling criteria)
+        peel_alpha : float (default: 0.05) 
+            parameter controlling the peeling stage
+        paste_alpha : float (default: 0.05)
+            parameter controlling the pasting stage
+        mass_min : float (default: 0.05)
+            minimum mass of a box
+        include : list of str
+            the names of variables included in the PRIM analysis
+        exclude : list of str
+            the names of variables excluded from the PRIM analysis
+        """
         
         # Ensure the input x is a numpy matrix/array
         if isinstance(x, pd.DataFrame):
