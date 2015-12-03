@@ -4,6 +4,7 @@ Scenario discovery utilities used by both :mod:`cart` and :mod:`prim`
 from __future__ import (absolute_import, print_function, division,
                         unicode_literals)
 import abc
+import copy
 import logging
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -77,14 +78,20 @@ def _make_box(x):
     
     '''
     
-    box = np.zeros((2, ), x.dtype)
+    # get the types in the order they appear in the numpy array
+    types = [(v[1], k, v[0].name) for k, v in x.dtype.fields.iteritems()]
+    types = sorted(types)
     
+    # convert any bool types to object to store set(False, True)
+    ntypes = [(k, 'object' if t == 'bool' else t) for (_, k, t) in types]
+    
+    # create box limits
+    box = np.zeros((2, ), ntypes)
     names = recfunctions.get_names(x.dtype)
     
     for name in names:
-        dtype = x.dtype.fields.get(name)[0] 
-        mask = np.ma.getmaskarray(x[name])
-        values = x[name][mask==False]
+        dtype = box.dtype.fields.get(name)[0]
+        values = x[name]
         
         if dtype == 'object':
             try:
@@ -94,8 +101,9 @@ def _make_box(x):
                 logging.getLogger(__name__).warning("{} has unhashable values".format(name))
                 raise e
         else:
-            box[name][0] = np.min(values, axis=0) 
-            box[name][1] = np.max(values, axis=0)    
+            box[name][0] = np.min(values, axis=0)
+            box[name][1] = np.max(values, axis=0)
+               
     return box  
 
 

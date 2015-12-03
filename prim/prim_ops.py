@@ -138,7 +138,7 @@ def discrete_peel(prim, box, name):
     """
     # get the values within the box and the box limits
     x = prim.x[box.yi][name]
-    limits = box.box_lims[-1][name]
+    limits = box._box_lims[-1][name]
     
     # peel from the lower and upper dimension
     peels = []
@@ -183,7 +183,7 @@ def discrete_peel(prim, box, name):
                 new_limit = np.min(x[logical])            
         
         indices = box.yi[logical] 
-        temp_box = copy.deepcopy(box.box_lims[-1])
+        temp_box = copy.deepcopy(box._box_lims[-1])
         temp_box[name][index] = new_limit
         peels.append((indices, temp_box))
 
@@ -208,7 +208,7 @@ def categorical_peel(prim, box, name):
     """
     # get the values within the box and the categories contained within the box
     x = prim.x[box.yi][name]
-    entries = box.box_lims[-1][name][0]
+    entries = box._box_lims[-1][name][0]
     
     # peel each category contained in the box
     peels = []
@@ -216,7 +216,7 @@ def categorical_peel(prim, box, name):
     if len(entries) > 1:
         # can only peel if there is more than one category
         for entry in entries:
-            temp_box = np.copy(box.box_lims[-1])
+            temp_box = np.copy(box._box_lims[-1])
             peel = copy.deepcopy(entries)
             peel.discard(entry)
             temp_box[name][:] = peel
@@ -326,10 +326,10 @@ def categorical_paste(prim, box, name):
     the new box limits, or an empty list if no peels were possible
     """
     x = prim.x[prim.yi_remaining]
-    limits = box.box_lims[-1]
+    limits = box._box_lims[-1]
     
     c_in_b = limits[name][0]
-    c_t = prim.box_init[name][0]
+    c_t = prim._box_init[name][0]
     
     pastes = []
     
