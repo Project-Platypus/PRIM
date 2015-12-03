@@ -34,9 +34,9 @@ def get_quantile(data, quantile):
     Parameters
     ----------
     data : ndarray
-           dataset for which quantile is needed
+        dataset for which quantile is needed
     quantile : float
-               the desired quantile
+        the desired quantile
     
     Returns
     -------
@@ -110,7 +110,7 @@ def real_peel(prim, box, name):
                 logical = x <= box_peel
                 indices = box.yi[logical]
                 
-            temp_box = copy.deepcopy(box.box_lims[-1])
+            temp_box = copy.deepcopy(box._box_lims[-1])
             temp_box[name][index] = box_peel
             peels.append((indices, temp_box))
         else:
@@ -258,8 +258,8 @@ def real_paste(prim, box, name):
     the new box limits, or an empty list if no pastes were possible
     """
     x = prim.x[prim.yi_remaining]
-    limits = box.box_lims[-1]
-    init_limits = prim.box_init
+    limits = box._box_lims[-1]
+    init_limits = prim._box_init
 
     pastes = []
     for direction in ['lower', 'upper']:

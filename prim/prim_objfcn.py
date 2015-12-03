@@ -41,7 +41,7 @@ def lenient1(y_old, y_new):
     number of data points in the box. This objective function offsets a problem
     in case of categorical data where the normal objective function often
     results in boxes mainly based on the categorical data.  This is based on
-    equation 14.5 in Friedman and Fisher (1998).
+    equation 14.5 in Friedman and Fisher (1999).
     
     This function can cope with continuous, integer, and categorical
     uncertainties.
@@ -49,9 +49,9 @@ def lenient1(y_old, y_new):
     Parameters
     ----------
     y_old : ndarray
-            the y values in the original box
+        the y values in the original box
     y_new : ndarray
-            the y values in the new box
+        the y values in the new box
             
     Returns
     -------
@@ -78,15 +78,15 @@ def lenient1(y_old, y_new):
 def lenient2(y_old, y_new):
     """An alternative objective function (peeling criteria) for PRIM.
     
-    Based on equation 14.6 in Friedman and Fishesr (1998), this peeling criteria
+    Based on equation 14.6 in Friedman and Fishesr (1999), this peeling criteria
     minimizes the mean in the peeled subbox.
     
     Parameters
     ----------
     y_old : ndarray
-            the y values in the original box
+        the y values in the original box
     y_new : ndarray
-            the y values in the new box
+        the y values in the new box
             
     Returns
     -------
@@ -116,15 +116,15 @@ def lenient2(y_old, y_new):
 def original(y_old, y_new):
     """The original objective function (peeling criteria) used by PRIM.
     
-    Given by equation 14.1 in Friedman and Fisher (1998), this objective
+    Given by equation 14.1 in Friedman and Fisher (1999), this objective
     function seeks to maximize the improvement in the peeled subbox.
     
     Parameters
     ----------
     y_old : ndarray
-            the y values in the original box
+        the y values in the original box
     y_new : ndarray
-            the y values in the new box
+        the y values in the new box
             
     Returns
     -------

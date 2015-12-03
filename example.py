@@ -16,7 +16,7 @@ else:
 p = prim.Prim(df, lambda x : x["x1"]*x["x2"] + 0.2*x["x3"], threshold=0.5, threshold_type=">")
 
 box = p.find_box()
-box.show_tradeoff()
+print box
 #box.inspect()
 #print
 #print "a:", box.inspect()

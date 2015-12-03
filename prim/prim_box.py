@@ -16,23 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with PRIM.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import copy
 import logging
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import mpldatacursor
 from operator import itemgetter
 from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
 from prim.exceptions import PRIMError
-from prim import pairs_plotting
 from prim import scenario_discovery_util as sdutil
-from prim.plotting_util import make_legend
+from prim.plotting_util import pairwise_scatter
 
 try:
     import mpld3
@@ -41,73 +40,9 @@ except ImportError:
     global mpld3
     mpld3 = None
     
-def _pair_wise_scatter(x,y, box_lim, restricted_dims, grid=None):
-    ''' helper function for pair wise scatter plotting
-    
-    Parameters
-    ----------
-    x : numpy structured array
-        the experiments
-    y : numpy array
-        the outcome of interest
-    box_lim : numpy structured array
-              a boxlim
-    restricted_dims : list of strings
-                      list of uncertainties that define the boxlims
-    
-    '''
-
-    restricted_dims = list(restricted_dims)
-    combis = [(field1, field2) for field1 in restricted_dims\
-                               for field2 in restricted_dims]
-
-    if not grid:
-        grid = gridspec.GridSpec(len(restricted_dims), len(restricted_dims))                             
-        grid.update(wspace = 0.1,
-                    hspace = 0.1)    
-        figure = plt.figure()
-    else:
-        figure = plt.gcf()
-    
-    for field1, field2 in combis:
-        i = restricted_dims.index(field1)
-        j = restricted_dims.index(field2)
-        ax = figure.add_subplot(grid[i,j])  
-        
-        # scatter points
-        for n in [0,1]:
-            x_n = x[y==n]        
-            x_1 = x_n[field2]
-            x_2 = x_n[field1]
-            
-            if field1 == field2 and not len(restricted_dims) == 1:
-                ec = 'white'
-            elif n == 0:
-                ec = 'b'
-            else:
-                ec = 'r'    
-            
-            ax.scatter(x_1, x_2, facecolor=ec, edgecolor=ec, s=10)
-            
-        ax.autoscale(tight=True)
-
-        # draw boxlim
-        if field1 != field2 or len(restricted_dims) == 1:
-            x_1 = box_lim[field2]
-            x_2 = box_lim[field1]
-    
-            for n in [0,1]:
-                ax.plot(x_1,
-                        [x_2[n], x_2[n]], c='k', linewidth=3)
-                ax.plot([x_1[n], x_1[n]],
-                        x_2, c='k', linewidth=3)
-            
-#       #reuse labeling function from pairs_plotting
-        if len(restricted_dims) > 1:
-            pairs_plotting.do_text_ticks_labels(ax, i, j, field1, field2, None, 
-                                            restricted_dims)
-            
-    return figure
+def indent(lines, amount, ch=' '):
+    padding = amount * ch
+    return padding + ('\n'+padding).join(lines.split('\n'))
 
 class CurEntry(object):
     '''a descriptor for the current entry on the peeling and pasting 
@@ -154,101 +89,96 @@ class PrimBox(object):
     res_dim = CurEntry('res dim')
     mass = CurEntry('mass')
     
-    _frozen=False
-    
     def __init__(self, prim, box_lims, indices):
-        '''init 
+        """Create a new PrimBox object.
         
         Parameters
         ----------
-        prim : Prim instance
+        prim : Prim object
+            the Prim object which created this box
         box_lims : recarray
+            the initial box limits
         indices : ndarray
-        
-        
-        '''
+            the indices in the dataset
+        """
         
         self.prim = prim
         
         # peeling and pasting trajectory
-        colums = ['coverage', 'density', 'mean', 'res dim', 'mass']
-        self.peeling_trajectory = pd.DataFrame(columns=colums)
+        columns = ['coverage', 'density', 'mean', 'res dim', 'mass']
+        self.peeling_trajectory = pd.DataFrame(columns=columns)
         
-        self.box_lims = []
+        self._box_lims = []
         self._cur_box = -1
+        self._frozen = False
         
-        # indices van data in box
+        # add the given box limits to the peeling/pasting trajectory
         self.update(box_lims, indices)
-
-    def __getattr__(self, name):
-        '''
-        used here to give box_lim same behaviour as coverage, density, mean
-        res_dim, and mass. That is, it will return the box lim associated with
-        the currently selected box. 
-        '''
         
-        if name=='box_lim':
-            return self.box_lims[self._cur_box]
-        else:
-            raise AttributeError
-
-    def inspect(self, i=None, style='table'):
-        '''
+    def __len__(self):
+        """Returns the number pf peeling/pasting trajectories."""
+        return len(self.peeling_trajectory)
         
-        Write the stats and box limits of the user specified box to standard 
-        out. if i is not provided, the last box will be printed
+    def __str__(self):
+        message = "".join(["Box %d [Peeling Trajectory %d]\n",
+                           "    Stats\n",
+                           "        Coverage: %f\n",
+                           "        Density:  %f\n",
+                           "        Mass:     %f\n",
+                           "        Res Dim:  %f\n",
+                           "        Mean:     %f\n",
+                           "    Limits\n",
+                           "%s"])
         
-        Parameters
-        ----------
-        i : int, optional
-            the index of the box, defaults to currently selected box
-        style : {'table', 'graph'}
-                the style of the visualization
+        return message % (len(self.prim._boxes),
+                          self._cur_box,
+                          self.coverage,
+                          self.density,
+                          self.mass,
+                          self.res_dim,
+                          self.mean,
+                          indent(str(self.limits), 8))
         
-        '''
-        if i == None:
-            i = self._cur_box
-        
-        stats = self.peeling_trajectory.iloc[i].to_dict()
+    @property
+    def stats(self):
+        """Returns the statistics for the current peeling/pasting trajectory."""
+        return {"coverage" : self.coverage,
+                "density" : self.density,
+                "mean" : self.mean,
+                "res dim" : self.res_dim,
+                "mass" : self.mass}
+    
+    @property
+    def limits(self):
+        stats = self.peeling_trajectory.iloc[self._cur_box].to_dict()
         stats['restricted_dim'] = stats['res dim']
 
-        qp_values = self._calculate_quasi_p(i)
+        qp_values = self._calculate_quasi_p(self._cur_box)
+        
         uncs = [(key, value) for key, value in qp_values.items()]
         uncs.sort(key=itemgetter(1))
         uncs = [uncs[0] for uncs in uncs]
         
-        if style == 'table':
-            return self._inspect_table(i, uncs, qp_values)
-        elif style == 'graph':
-            return self._inspect_graph(i, uncs, qp_values)
-        else:
-            raise ValueError("style must be one of graph or table")
-            
-    def _inspect_table(self, i, uncs, qp_values):
-        '''Helper function for visualizing box statistics in 
-        table form'''
-        #make the descriptive statistics for the box
-        i = 19
-        print(self.peeling_trajectory.iloc[i])
-        print()
-        
-        # make the box definition
-        columns = pd.MultiIndex.from_product([['box {}'.format(i)],
-                                              ['min', 'max', 'qp values']])
         box_lim = pd.DataFrame(np.zeros((len(uncs), 3)), 
                                index=uncs, 
-                               columns=columns)
+                               columns=['min', 'max', 'qp values'])
         
         for unc in uncs:
-            values = self.box_lims[i][unc][:]
+            values = self._box_lims[self._cur_box][unc][:]
             box_lim.loc[unc] = [values[0], values[1], qp_values[unc]]
              
-        print(box_lim)
-        print()
-        
+        return box_lim
 
+    def show_details(self, fig=None):
+        """Detail plot for the current peeling/pasting trajectory.
         
-    def show_box_details(self, fig=None):
+        Generates a plot showing the details of the current peeling/pasting
+        trajectory.
+        
+        Returns
+        -------
+        the Matplotlib figure
+        """
         i = self._cur_box
         qp_values = self._calculate_quasi_p(i)
         uncs = [(key, value) for key, value in qp_values.items()]
@@ -262,8 +192,6 @@ class PrimBox(object):
         else:
             fig = plt.figure(figsize=(12, 6))
         
-        
-        
         outer_grid = gridspec.GridSpec(1, 2, wspace=0.1, hspace=0.1)
           
         ax0 = plt.Subplot(fig, outer_grid[0], frame_on=False)
@@ -275,7 +203,7 @@ class PrimBox(object):
         inner_grid = gridspec.GridSpecFromSubplotSpec(n, n,
             subplot_spec=outer_grid[0], wspace=0.1, hspace=0.1)  
           
-        self.show_pairs_scatter(grid=inner_grid)
+        self.show_scatter(grid=inner_grid)
           
         inner_grid = gridspec.GridSpecFromSubplotSpec(2, 1,
             subplot_spec=outer_grid[1], wspace=0.0, hspace=0.0)
@@ -283,8 +211,7 @@ class PrimBox(object):
         ax1 = plt.Subplot(fig, inner_grid[0])
           
         fig.add_subplot(ax1)
-        self.show_box()
-        ax1.set_title("Restricted Dimensions", y=1.08)
+        self._show_limits()
           
         ax2 = plt.Subplot(fig, inner_grid[1], frame_on=False)
         ax2.xaxis.set_visible(False)
@@ -301,38 +228,37 @@ class PrimBox(object):
                                 loc='center'))
         ax2.set_title("Statistics", y=0.7)
         
-        def next(event):
+        def show_next(event):
             i = (self._cur_box + 1) % self.peeling_trajectory.shape[0]
             self.select(i)
-            self.show_box_details(fig=event.canvas.figure)
+            self.show_details(fig=event.canvas.figure)
             
-        def prev(event):
+        def show_prev(event):
             i = (self._cur_box - 1) % self.peeling_trajectory.shape[0]
             self.select(i)
-            self.show_box_details(fig=event.canvas.figure)
+            self.show_details(fig=event.canvas.figure)
 
         axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
         axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
-        self.bnext = Button(axnext, "Next")
-        self.bprev = Button(axprev, "Prev")
-        self.bnext.on_clicked(next)
-        self.bprev.on_clicked(prev)
+        self._bnext = Button(axnext, "Next")
+        self._bprev = Button(axprev, "Prev")
+        self._bnext.on_clicked(show_next)
+        self._bprev.on_clicked(show_prev)
         
         plt.subplots_adjust(top=0.85)
         plt.draw()
         
         return fig
         
-        
-    def show_box(self, ax=None):
+    def _show_limits(self, ax=None):
         i = self._cur_box
         qp_values = self._calculate_quasi_p(i)
         uncs = [(key, value) for key, value in qp_values.items()]
         uncs.sort(key=itemgetter(1))
         uncs = [uncs[0] for uncs in uncs]
         
-        box_lim_init = self.prim.box_init
-        box_lim = self.box_lims[i]
+        box_lim_init = self.prim._box_init
+        box_lim = self._box_lims[i]
         norm_box_lim =  sdutil._normalize(box_lim, box_lim_init, uncs)
         
         left = []
@@ -373,6 +299,8 @@ class PrimBox(object):
                     verticalalignment='top',
                     color='w')
             
+        ax.set_title("Restricted Dimensions")
+            
         return fig
         
     def _inspect_graph(self,  i, uncs, qp_values):
@@ -384,7 +312,7 @@ class PrimBox(object):
         # box_init, which is visualized by a grey area in this
         # plot.
         box_lim_init = self.prim.box_init
-        box_lim = self.box_lims[i]
+        box_lim = self._box_lims[i]
         norm_box_lim =  sdutil._normalize(box_lim, box_lim_init, uncs)
         
         fig, ax = sdutil._setup_figure(uncs)
@@ -428,13 +356,13 @@ class PrimBox(object):
                 x = norm_box_lim[j][0]
     
                 if not np.allclose(x, 0):
-                    label = "{: .2g}".format(self.box_lims[i][u][0])
+                    label = "{: .2g}".format(self._box_lims[i][u][0])
                     ax.text(x-0.01, y, label, ha='right', va='center',
                            bbox=props, color='blue', fontweight='normal')
     
                 x = norm_box_lim[j][1]
                 if not np.allclose(x, 1):
-                    label = "{: .2g}".format(self.box_lims[i][u][1])
+                    label = "{: .2g}".format(self._box_lims[i][u][1])
                     ax.text(x+0.01, y, label, ha='left', va='center',
                            bbox=props, color='blue', fontweight='normal')
 
@@ -472,134 +400,137 @@ class PrimBox(object):
         return fig
         
     def select(self, i):
-        '''        
-        select an entry from the peeling and pasting trajectory and update
-        the prim box to this selected box.
+        """Selects the given peeling/pasting trajectory.
+        
+        Updates this PrimBox object to the given peeling/pasting trajectory.
+        Subsequent calls to this object will reflect the data and statistics
+        for the given trajectory.
         
         Parameters
         ----------
         i : int
-            the index of the box to select.
-        
-        '''
+            the index of the peeling/pasting trajectory
+        """
         if self._frozen:
-            raise PRIMError("""box has been frozen because PRIM has found 
-                                at least one more recent box""")
+            raise PRIMError("box has been frozen because PRIM has found at least one more recent box")
         
         indices = sdutil._in_box(self.prim.x[self.prim.yi_remaining], 
-                                 self.box_lims[i])
+                                 self._box_lims[i])
         self.yi = self.prim.yi_remaining[indices]
         self._cur_box = i
 
-    def drop_restriction(self, uncertainty):
-        '''
-        drop the restriction on the specified dimension. That is, replace
-        the limits in the chosen box with a new box where for the specified 
-        uncertainty the limits of the initial box are being used. The resulting
-        box is added to the peeling trajectory.
+    def drop_restriction(self, name):
+        """Drops any restrictions on the specified variable.
+        
+        Removes any restrictions imposed by this box on the given variable.
+        This creates a new PrimBox object that is appended to the
+        peeling/pasting trajectory.
         
         Parameters
         ----------
-        uncertainty : str
+        name : str
+            the name of the variable
+        """
+        new_box_lim = copy.deepcopy(self._box_lims[self._cur_box])
+        new_box_lim[name][:] = self._box_lims[0][name][:]
         
-        '''
-        
-        new_box_lim = copy.deepcopy(self.box_lim)
-        new_box_lim[uncertainty][:] = self.box_lims[0][uncertainty][:]
         indices = sdutil._in_box(self.prim.x[self.prim.yi_remaining], 
                                  new_box_lim)
         indices = self.prim.yi_remaining[indices]
+        
         self.update(new_box_lim, indices)
         
     def update(self, box_lims, indices):
-        '''
+        """Updates this box with new limits.
         
-        update the box to the provided box limits.
+        Adds the given limits to the peeling/pasting trajectory for this box
+        and selects this trajectory.  
         
         Parameters
         ----------
-        box_lims: numpy recarray
-                  the new box_lims
+        box_lims: recarray
+            the new box limits
         indices: ndarray
-                 the indices of y that are inside the box
-      
-        '''
+            the indices of y that are inside the box
+        """
         self.yi = indices
-        
         y = self.prim.y[self.yi]
 
-        self.box_lims.append(box_lims)
-
+        self._box_lims.append(box_lims)
         coi = self.prim.determine_coi(self.yi)
 
-        data = {'coverage':coi/self.prim.t_coi, 
-                'density':coi/y.shape[0],  
-                'mean':np.mean(y),
-                'res dim':sdutil._determine_nr_restricted_dims(self.box_lims[-1], 
-                                                              self.prim.box_init),
-                'mass':y.shape[0]/self.prim.n}
-        new_row = pd.DataFrame([data])
-        self.peeling_trajectory = self.peeling_trajectory.append(new_row, 
-                                                             ignore_index=True)
+        stats = {"coverage" : coi/self.prim.t_coi, 
+                "density" : coi/y.shape[0],  
+                "mean" : np.mean(y),
+                "res dim" : sdutil._determine_nr_restricted_dims(
+                        self._box_lims[-1], 
+                        self.prim._box_init),
+                "mass" : y.shape[0]/self.prim.n}
+        
+        self.peeling_trajectory = self.peeling_trajectory.append(
+                pd.DataFrame([stats]), 
+                ignore_index=True)
         
         self._cur_box = len(self.peeling_trajectory)-1
         
     def show_ppt(self):
-        '''show the peeling and pasting trajectory in a figure'''
+        """Plot of peeling and pasting trajectory statistics.
         
+        Produces a plot of the peeling and pasting trajectory statistics,
+        including the mean, mass, coverage, density, and number of restricted
+        dimensions.
+        
+        Returns
+        -------
+        the Matplotlib figure
+        """
         ax = host_subplot(111)
-        ax.set_xlabel("peeling and pasting trajectory")
+        ax.set_xlabel("Peeling and Pasting Trajectory")
+        ax.set_ylabel("Mean / Mass / Coverage / Density")
         
         par = ax.twinx()
-        par.set_ylabel("nr. restricted dimensions")
+        par.set_ylabel("# of Restricted Dimensions")
             
-        ax.plot(self.peeling_trajectory['mean'], label="mean")
-        ax.plot(self.peeling_trajectory['mass'], label="mass")
-        ax.plot(self.peeling_trajectory['coverage'], label="coverage")
-        ax.plot(self.peeling_trajectory['density'], label="density")
-        par.plot(self.peeling_trajectory['res dim'], label="restricted dims")
+        linewidth = 2.0
+        ax.plot(self.peeling_trajectory['mean'], linewidth=linewidth)
+        ax.plot(self.peeling_trajectory['mass'], linewidth=linewidth)
+        ax.plot(self.peeling_trajectory['coverage'], linewidth=linewidth)
+        ax.plot(self.peeling_trajectory['density'], linewidth=linewidth)
+        par.plot(self.peeling_trajectory['res dim'], linewidth=linewidth)
+        
         ax.grid(True, which='both')
-        ax.set_ylim(ymin=0,ymax=1)
+        ax.set_ylim(0, 1)
         
         fig = plt.gcf()
         
+        # reduce the height of the plot so the legend has enough room
         box = ax.get_position()
         ax.set_position([box.x0, box.y0 + box.height*0.2, box.width, box.height*0.8])
         
-        ax.legend(['mean', 'mass', 'coverage', 'density', 'restricted_dim'],
+        # create the legend
+        ax.legend(['Mean', 'Mass', 'Coverage', 'Density', "Restricted Dimensions"],
                   ncol=3,
                   loc=9,
                   borderaxespad=0.1,
-                  bbox_to_anchor=(0.5, -0.2)
-                      #mode='expand',
-                      #bbox_to_anchor=(0., 1.1, 1., .102))
-                      )
-        
-       # make_legend(['mean', 'mass', 'coverage', 'density', 'restricted_dim'],
-       #             ax, ncol=5, alpha=1)
+                  bbox_to_anchor=(0.5, -0.2))
+
         return fig
     
-    def formatter(self, **kwargs):
-        i = kwargs.get("ind")[0]
-        data = self.peeling_trajectory.ix[i]
-        label = "Box %d\nCoverage: %2.1f%%\nDensity: %2.1f%%\nMass: %2.1f%%\nRes Dim: %d" % (i, 100*data["coverage"], 100*data["density"], 100*data["mass"], data["res dim"])
-        return label
-    
-    def handle_click(self, event):
-        #if event.mouseevent.dblclick:
-        i = event.ind[0]
-        self.select(i)
-            
-        if event.mouseevent.button == 1:
-            self.show_box_details().show()
-    
     def show_tradeoff(self):
-        '''Visualize the trade off between coverage and density. Color is used
-        to denote the number of restricted dimensions.'''
-       
+        """Plot the tradeoff between coverage and density.
+        
+        Generates a plot of the tradeoff between coverage and density for the
+        peeling/pasting trajectories.  Color is used to denote the number of
+        restricted dimensions.
+        
+        Returns
+        -------
+        the Matplotlib figure
+        """
         fig = plt.figure()
         ax = fig.add_subplot(111, aspect='equal')
         
+        # setup the color map for coloring the number of restricted dimensions
         cmap = mpl.cm.YlGnBu_r #@UndefinedVariable
         boundaries = np.arange(-0.5, 
                                max(self.peeling_trajectory['res dim'])+1.5, 
@@ -607,6 +538,7 @@ class PrimBox(object):
         ncolors = cmap.N
         norm = mpl.colors.BoundaryNorm(boundaries, ncolors)
         
+        # plot the tradeoff
         p = ax.scatter(self.peeling_trajectory['coverage'], 
                        self.peeling_trajectory['density'], 
                        c=self.peeling_trajectory['res dim'], 
@@ -614,38 +546,55 @@ class PrimBox(object):
                        cmap=cmap,
                        picker=True)
 
-        ax.set_ylabel('density')
-        ax.set_xlabel('coverage')
-        ax.set_ylim(ymin=0, ymax=1.2)
-        ax.set_xlim(xmin=0, xmax=1.2)
-        
-        mpldatacursor.datacursor(formatter=self.formatter, hover=True)
-        fig.canvas.mpl_connect('pick_event', self.handle_click)
+        ax.set_ylabel('Density')
+        ax.set_xlabel('Coverage')
+        ax.set_ylim(0, 1.2)
+        ax.set_xlim(0, 1.2)
         
         ticklocs = np.arange(0, 
                              max(self.peeling_trajectory['res dim'])+1, 
                              step=1)
         cb = fig.colorbar(p, spacing='uniform', ticks=ticklocs, drawedges=True)
-        cb.set_label("nr. of restricted dimensions")
+        cb.set_label("# of Restricted Dimensions")
         
-        # make the tooltip tables
+        # enable mouse interaction
+        def handle_click(self, event):
+            i = event.ind[0]
+            self.select(i)
+            self.show_details().show()
+            
+        def formatter(self, **kwargs):
+            i = kwargs.get("ind")[0]
+            data = self.peeling_trajectory.ix[i]
+            return """Box %d
+                   Coverage: %2.1f%%
+                   Density: %2.1f%%
+                   Mass: %2.1f%%
+                   Res Dim: %d""" % (i,
+                                     100*data["coverage"],
+                                     100*data["density"],
+                                     100*data["mass"],
+                                     data["res dim"])
+        
+        mpldatacursor.datacursor(formatter=formatter, hover=True)
+        fig.canvas.mpl_connect('pick_event', handle_click)
+        
+        # enable tooltips on IPython Notebook
         if mpld3:
-            # Define some CSS to control our custom labels
             css = """
-            table
-            {
+            table {
               border-collapse: collapse;
             }
-            th
-            {
+            
+            th {
               background-color:  rgba(255,255,255,0.95);
             }
-            td
-            {
+            
+            td {
               background-color: rgba(255,255,255,0.95);
             }
-            table, th, td
-            {
+            
+            table, th, td {
               font-family:Tahoma, Tahoma, sans-serif;
               font-size: 16px;
               border: 1px solid black;
@@ -656,6 +605,7 @@ class PrimBox(object):
             labels = []
             columns_to_include = ['coverage','density', 'mass', 'res dim']
             frmt = lambda x: '{:.2f}'.format( x )
+            
             for i in range(len(self.peeling_trajectory['coverage'])):
                 label = self.peeling_trajectory.ix[[i], columns_to_include]
                 label.columns = ["Coverage", "Density", "Mass", "Res. Dim."]
@@ -664,37 +614,40 @@ class PrimBox(object):
                 labels.append(str(label.to_html(float_format=frmt)))       
     
             tooltip = mpld3.plugins.PointHTMLTooltip(p, labels, voffset=10, 
-                                               hoffset=10, css=css)  
+                                                     hoffset=10, css=css)  
             mpld3.plugins.connect(fig, tooltip)        
         
         return fig
     
-    def show_pairs_scatter(self, grid=None):
-        '''
+    def show_scatter(self, grid=None):
+        """Shows restricted dimensions overlay on scatter plot.
         
-        make a pair wise scatter plot of all the restricted dimensions
-        with color denoting whether a given point is of interest or not
-        and the boxlims superimposed on top.
+        Generates a plot showing the data points, with the cases of interest
+        colored red, and the restricted dimensions overlayed as black
+        rectangles.
         
-        '''   
-        fig = _pair_wise_scatter(self.prim.x[self.prim.yi_remaining], self.prim.y[self.prim.yi_remaining], self.box_lim, 
-                           sdutil._determine_restricted_dims(self.box_lim, 
-                                                        self.prim.box_init),
-                            grid = grid)
+        Returns
+        -------
+        the Matplotlib figure
+        """   
+        fig = pairwise_scatter(self.prim.x[self.prim.yi_remaining],
+                                self.prim.y[self.prim.yi_remaining],
+                                self._box_lims[self._cur_box], 
+                                sdutil._determine_restricted_dims(
+                                        self._box_lims[self._cur_box], 
+                                        self.prim._box_init),
+                                grid = grid)
         
-        title = "Box %d" % self._cur_box
+        title = "Peeling/Pasting Trajectory %d" % self._cur_box
         fig.suptitle(title, fontsize=16)
         fig.canvas.set_window_title(title)
         return fig
-    
-    def write_ppt_to_stdout(self):
-        '''write the peeling and pasting trajectory to stdout'''
-        print(self.peeling_trajectory)
-        print("\n")
 
     def _calculate_quasi_p(self, i):
-        '''helper function for calculating quasi-p values as discussed in 
-        Bryant and Lempert (2010). This is a one sided  binomial test. 
+        """Calculates quasi-p values as discussed in Bryant and Lempert (2010).
+        
+        This is a one sided  binomial test.  Requires scipy.stats module to be
+        installed.
         
         Parameters
         ----------
@@ -702,13 +655,16 @@ class PrimBox(object):
             the specific box in the peeling trajectory for which the quasi-p 
             values are to be calculated.
         
-        '''
+        Returns
+        -------
+        the quasi-p value
+        """
         from scipy.stats import binom
         
-        box_lim = self.box_lims[i]
-        restricted_dims = list(sdutil._determine_restricted_dims(box_lim,
-                                                           self.prim.box_init))
-        print restricted_dims
+        box_lim = self._box_lims[i]
+        restricted_dims = list(sdutil._determine_restricted_dims(
+                box_lim,
+                self.prim._box_init))
         
         # total nr. of cases in box
         Tbox = self.peeling_trajectory['mass'][i] * self.prim.n 
@@ -720,7 +676,7 @@ class PrimBox(object):
         
         for u in restricted_dims:
             temp_box = copy.deepcopy(box_lim)
-            temp_box[u] = self.box_lims[0][u]
+            temp_box[u] = self._box_lims[0][u]
         
             indices = sdutil._in_box(self.prim.x[self.prim.yi_remaining], 
                                      temp_box)
@@ -742,9 +698,4 @@ class PrimBox(object):
             qp_values[u] = qp
             
         return qp_values
-
-    def _format_stats(self, nr, stats):
-        '''helper function for formating box stats'''
-        row = self.stats_format.format(nr,**stats)
-        return row
     

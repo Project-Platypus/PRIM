@@ -16,26 +16,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-'''
-
-
-
-The implementation is designed for interactive use in combination with the
-ipython notebook. 
-
-'''
 from __future__ import absolute_import, division
-import six
 
-from operator import itemgetter
+import six
 import operator
 import logging
 import functools
-
 import numpy as np
 import numpy.lib.recfunctions as rf
-
 import pandas as pd
 from prim.exceptions import PRIMError
 from prim.prim_box import PrimBox
@@ -221,30 +209,27 @@ class Prim(sdutil.OutputFormatterMixin):
         self.t_coi = self.determine_coi(self.yi)
         
         # initial box that contains all data
-        self.box_init = sdutil._make_box(self.x)
+        self._box_init = sdutil._make_box(self.x)
     
         # make a list in which the identified boxes can be put
         self._boxes = []
         
+        # set yi_remaining to all y values
         self._update_yi_remaining()
     
     @property
     def boxes(self):
-        boxes = [box.box_lim for box in self._boxes]
+        box_lims = [box.box_lim for box in self._boxes]
         
-        if not boxes:
+        if not box_lims:
             return [self.box_init]
-        elif not np.all(sdutil._compare(boxes[-1], self.box_init)):
-                boxes.append(self.box_init)
-        return boxes 
+        elif not np.all(sdutil._compare(box_lims[-1], self.box_init)):
+            box_lims.append(self.box_init)
+        return box_lims 
     
     @property
     def stats(self):
-        stats = []
-        items = ['coverage','density', 'mass', 'res_dim']
-        for box in self._boxes:
-            stats.append({key: getattr(box, key) for key in items})
-        return stats
+        return [b.stats for b in self._boxes]
     
     def perform_pca(self, subsets=None, exclude=set()):
         '''
@@ -368,7 +353,7 @@ class Prim(sdutil.OutputFormatterMixin):
                      self.determine_coi(self.yi_remaining)))
         
         # make a new box that contains all the remaining data points
-        box = PrimBox(self, self.box_init, self.yi_remaining[:])
+        box = PrimBox(self, self._box_init, self.yi_remaining[:])
         
         #  perform peeling phase
         box = self._peel(box)
@@ -464,11 +449,11 @@ class Prim(sdutil.OutputFormatterMixin):
             obj = self.obj_func(self.y[box.yi], self.y[i])
             non_res_dim = len(self.x.dtype.descr)-\
                           sdutil._determine_nr_restricted_dims(box_lim, 
-                                                               self.box_init)
+                                                               self._box_init)
             score = (obj, non_res_dim, box_lim, i)
             scores.append(score)
 
-        scores.sort(key=itemgetter(0,1), reverse=True)
+        scores.sort(key=operator.itemgetter(0,1), reverse=True)
         obj_score, non_res_dim, box_new, indices = scores[0]
         
         # if the best peel results in an improvement, return the peel;
@@ -487,8 +472,8 @@ class Prim(sdutil.OutputFormatterMixin):
         type specific helper methods.'''
         
         x = self.x[self.yi_remaining]
-        res_dim = sdutil._determine_restricted_dims(box.box_lims[-1],
-                                                    self.box_init)
+        res_dim = sdutil._determine_restricted_dims(box._box_lims[-1],
+                                                    self._box_init)
         
         #identify all possible pastes
         possible_pastes = []
@@ -515,11 +500,11 @@ class Prim(sdutil.OutputFormatterMixin):
             obj = self.obj_func(self.y[box.yi], self.y[i])
             non_res_dim = len(x.dtype.descr)-\
                           sdutil._determine_nr_restricted_dims(box_lim,
-                                                               self.box_init)
+                                                               self._box_init)
             score = (obj, non_res_dim, box_lim, i)
             scores.append(score)
 
-        scores.sort(key=itemgetter(0,1), reverse=True)
+        scores.sort(key=operator.itemgetter(0,1), reverse=True)
         obj, _, box_new, indices = scores[0]
         
         # if the best paste results in an improvement, return the paste;
