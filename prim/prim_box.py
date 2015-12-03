@@ -252,7 +252,7 @@ class PrimBox(object):
         
         return fig
         
-    def _show_limits(self, ax=None):
+    def _show_limits(self):
         i = self._cur_box
         qp_values = self._calculate_quasi_p(i)
         uncs = [(key, value) for key, value in qp_values.items()]
@@ -267,10 +267,15 @@ class PrimBox(object):
         height = []
         bottom = []
         
-        for i, _ in enumerate(uncs):
-            left.append(i)
-            height.append(norm_box_lim[i][1]-norm_box_lim[i][0])
-            bottom.append(norm_box_lim[i][0])
+        for i, v in enumerate(uncs):
+            if self.prim.x.dtype.fields[v][0].name == 'bool':
+                left.append(i)
+                height.append(-1)
+                bottom.append(0)
+            else:
+                left.append(i)
+                height.append(norm_box_lim[i][1]-norm_box_lim[i][0])
+                bottom.append(norm_box_lim[i][0])
         
         plt.bar(left, 
                 height,
@@ -284,6 +289,22 @@ class PrimBox(object):
                         right='off',
                         left='off',
                         labelleft='off')
+        
+        for i, v in enumerate(uncs):
+            if self.prim.x.dtype.fields[v][0].name == 'bool':
+                elements = sorted(list(box_lim_init[v][0]))
+                selected_elements = box_lim[v][0]
+                length = len(elements)
+                
+                x = [v / (length+1) for v in range(1, length+1)]
+
+                for xi, label in zip(x, elements):
+                    if label in selected_elements:
+                        plt.text(i, xi, label, horizontalalignment='center',
+                                 verticalalignment='center', color='b')
+                    else:
+                        plt.text(i, xi, label, horizontalalignment='center',
+                                 verticalalignment='center', color="#cccccc")
         
         fig = plt.gcf()
         ax = plt.gca()
@@ -679,7 +700,7 @@ class PrimBox(object):
         for u in restricted_dims:
             temp_box = copy.deepcopy(box_lim)
             temp_box[u] = self._box_lims[0][u]
-        
+            
             indices = in_box(self.prim.x[self.prim.yi_remaining], 
                              temp_box)
             indices = self.prim.yi_remaining[indices]

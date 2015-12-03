@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import six
 import operator
@@ -34,13 +34,6 @@ from prim.prim_objfcn import lenient1
 from prim.scenario_discovery_util import (make_box, compare,
         determine_nr_restricted_dims, determine_restricted_dims,
         OutputFormatterMixin)
-
-# Created on 22 feb. 2013
-# 
-# .. codeauthor:: jhkwakkel <j.h.kwakkel (at) tudelft (dot) nl>
-
-
-
 
 class Prim(OutputFormatterMixin):
     """Patient Rule Induction Method.

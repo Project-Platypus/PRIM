@@ -92,7 +92,7 @@ def pairwise_labels(ax, i, j, field1, field2, ylabels, outcomes_to_show):
         else:
             ax.set_ylabel(field1)   
             
-def pairwise_scatter(x,y, box_lim, restricted_dims, grid=None):
+def pairwise_scatter(x, y, box_lim, restricted_dims, grid=None):
     ''' helper function for pair wise scatter plotting
     
     Parameters
@@ -139,13 +139,23 @@ def pairwise_scatter(x,y, box_lim, restricted_dims, grid=None):
             
             ax.scatter(x_1, x_2, facecolor=ec, edgecolor=ec, s=10)
             
+            if x.dtype.fields.get(field1)[0].name == 'bool':
+                ax.set_yticklabels(["False", "True"])
+                ax.set_yticks([0, 1])
+                
+            if x.dtype.fields.get(field2)[0].name == 'bool':
+                ax.set_xticklabels(["False", "True"])
+                ax.set_xticks([0, 1])
+            
         ax.autoscale(tight=True)
 
         # draw boxlim
-        if field1 != field2 or len(restricted_dims) == 1:
+        if ((field1 != field2 or len(restricted_dims) == 1) and 
+                x.dtype.fields.get(field1)[0].name != 'bool' and
+                x.dtype.fields.get(field2)[0].name != 'bool'):
             x_1 = box_lim[field2]
             x_2 = box_lim[field1]
-    
+         
             for n in [0,1]:
                 ax.plot(x_1,
                         [x_2[n], x_2[n]], c='k', linewidth=3)

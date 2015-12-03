@@ -1,6 +1,22 @@
-'''
-Scenario discovery utilities used by both :mod:`cart` and :mod:`prim`
-'''
+# The PRIM module for Python is a standalone version of the Patient Rule
+# Induction Method (PRIM) algorithm implemented in the EMA Workbench by Jan
+# Kwakkel, which is itself derived from the sdtoolkit R package developed by
+# RAND Corporation.  This standalone version of PRIM was created and maintained
+# by David Hadka.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import absolute_import, print_function, division
 
 import abc
@@ -234,7 +250,7 @@ def in_box(x, boxlim):
     for name in dims:
         value = x.dtype.fields.get(name)[0]
         
-        if value == 'object':
+        if value == 'object' or value == 'bool':
             entries = boxlim[name][0]
             l = np.ones( (x.shape[0], len(entries)), dtype=np.bool)
             for i,entry in enumerate(entries):
