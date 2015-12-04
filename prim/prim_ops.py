@@ -44,7 +44,10 @@ def get_quantile(data, quantile):
     """
     assert quantile > 0
     assert quantile < 1
- 
+
+    if isinstance(data, np.ma.MaskedArray):
+        data = data.compressed()
+    
     data = np.sort(data)
 
     i = (len(data)-1)*quantile
@@ -55,13 +58,13 @@ def get_quantile(data, quantile):
 
     if quantile > 0.5:
         # upper
-        while (data[index_lower] == data[index_upper]) & (index_lower>0):
+        while (data[index_lower] == data[index_upper]) and (index_lower>0):
             index_lower -= 1
             
         value = (data[index_lower]+data[index_upper])/2
     else:
         # lower
-        while (data[index_lower] == data[index_upper]) & (index_upper<len(data)-1):
+        while (data[index_lower] == data[index_upper]) and (index_upper<len(data)-1):
             index_upper += 1
             
         value = (data[index_lower]+data[index_upper])/2

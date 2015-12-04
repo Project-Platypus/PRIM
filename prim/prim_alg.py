@@ -129,6 +129,8 @@ class Prim(OutputFormatterMixin):
         # Ensure the input x is a numpy matrix/array
         if isinstance(x, pd.DataFrame):
             x = x.to_records(index=False)
+        elif isinstance(x, np.ma.MaskedArray):
+            pass
         else:
             x = np.asarray(x)
             
@@ -147,6 +149,8 @@ class Prim(OutputFormatterMixin):
             y = np.apply_along_axis(fun, 0, x)
         elif isinstance(y, pd.DataFrame) or isinstance(y, pd.Series):
             y = y.values
+        elif isinstance(y, np.ma.MaskedArray):
+            pass
         else:
             y = np.asarray(y)
             

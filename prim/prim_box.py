@@ -32,7 +32,7 @@ from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
 from prim.exceptions import PRIMError
 from prim.plotting_util import pairwise_labels
-from prim.scenario_discovery_util import (in_box, normalize, setup_figure,
+from prim.scenario_discovery_util import (in_box, normalize,
         determine_nr_restricted_dims, determine_restricted_dims)
 
 try:
@@ -327,101 +327,6 @@ class PrimBox(object):
             
         ax.set_title("Restricted Dimensions")
             
-        return fig
-        
-    def _inspect_graph(self,  i, uncs, qp_values):
-        '''Helper function for visualizing box statistics in 
-        graph form'''        
-        
-        # normalize the box lims
-        # we don't need to show the last box, for this is the 
-        # box_init, which is visualized by a grey area in this
-        # plot.
-        box_lim_init = self.prim.box_init
-        box_lim = self._box_lims[i]
-        norm_box_lim =  normalize(box_lim, box_lim_init, uncs)
-        
-        fig, ax = setup_figure(uncs)
-
-        for j, u in enumerate(uncs):
-            # we want to have the most restricted dimension
-            # at the top of the figure
-            xj = len(uncs) - j - 1
-
-            self.prim._plot_unc(box_lim_init, xj, j, 0, norm_box_lim, box_lim, 
-                                u, ax)
-
-            # new part
-            dtype = box_lim_init[u].dtype
-            
-            props = {'facecolor':'white',
-                     'edgecolor':'white',
-                     'alpha':0.25}
-            y = xj
-
-        
-            if dtype == object:
-                pass
-                elements = sorted(list(box_lim_init[u][0]))
-                max_value = (len(elements)-1)
-                values = box_lim[u][0]
-                x = [elements.index(entry) for entry in 
-                     values]
-                x = [entry/max_value for entry in x]
-                
-                for xi, label in zip(x, values):
-                    ax.text(xi, y-0.1, label, ha='center', va='center',
-                           bbox=props, color='blue', fontweight='normal')
-
-            else:
-                props = {'facecolor':'white',
-                         'edgecolor':'white',
-                         'alpha':0.25}
-    
-                # plot limit text labels
-                x = norm_box_lim[j][0]
-                if not np.allclose(x, 0):
-                    label = "{: .2g}".format(self._box_lims[i][u][0])
-                    ax.text(x-0.01, y, label, ha='right', va='center',
-                           bbox=props, color='blue', fontweight='normal')
-    
-                x = norm_box_lim[j][1]
-                if not np.allclose(x, 1):
-                    label = "{: .2g}".format(self._box_lims[i][u][1])
-                    ax.text(x+0.01, y, label, ha='left', va='center',
-                           bbox=props, color='blue', fontweight='normal')
-
-                # plot uncertainty space text labels
-                x = 0
-                label = "{: .2g}".format(box_lim_init[u][0])
-                ax.text(x-0.01, y, label, ha='right', va='center',
-                       bbox=props, color='black', fontweight='normal')
-    
-                x = 1
-                label = "{: .2g}".format(box_lim_init[u][1])
-                ax.text(x+0.01, y, label, ha='left', va='center',
-                       bbox=props, color='black', fontweight='normal')
-                
-            # set y labels
-            labels = ["{} ({:.2g})".format(u, qp_values[u]) for u in uncs]
-            labels = labels[::-1]
-            ax.set_yticklabels(labels)
-
-            # remove x tick labels
-            ax.set_xticklabels([])
-
-            # add table to the left
-            coverage = '{:.3g}'.format(self.peeling_trajectory['coverage'][i])
-            density = '{:.3g}'.format(self.peeling_trajectory['density'][i])
-            
-            ax.table(cellText=[[coverage], [density]],
-                    colWidths = [0.1]*2,
-                    rowLabels=['coverage', 'density'],
-                    colLabels=None,
-                    loc='right',
-                    bbox=[1.1, 0.9, 0.1, 0.1])
-        
-            #plt.tight_layout()
         return fig
         
     def select(self, i):

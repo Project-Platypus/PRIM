@@ -79,7 +79,6 @@ def make_box(x):
     '''
     
     # get the types in the order they appear in the numpy array
-    print(dir(x.dtype.fields))
     types = [(v[1], k, v[0].name) for k, v in six.iteritems(x.dtype.fields)]
     types = sorted(types)
     
@@ -93,6 +92,9 @@ def make_box(x):
     for name in names:
         dtype = box.dtype.fields.get(name)[0]
         values = x[name]
+        
+        if isinstance(values, np.ma.MaskedArray):
+            values = values.compressed()
         
         if dtype == 'object':
             try:
