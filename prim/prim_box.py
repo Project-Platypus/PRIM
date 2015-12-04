@@ -30,9 +30,9 @@ import mpldatacursor
 from operator import itemgetter
 from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
-from prim.exceptions import PRIMError
-from prim.plotting_util import pairwise_labels
-from prim.scenario_discovery_util import (in_box, normalize,
+from .exceptions import PrimError
+from .plotting_util import pairwise_labels
+from .scenario_discovery_util import (in_box, normalize,
         determine_nr_restricted_dims, determine_restricted_dims)
 
 try:
@@ -57,7 +57,7 @@ class CurEntry(object):
         return instance.peeling_trajectory[self.name][instance._cur_box]
     
     def __set__(self, instance, value):
-        raise PRIMError("this property cannot be assigned to")
+        raise PrimError("this property cannot be assigned to")
 
 class PrimBox(object):
     '''A class that holds information over a specific box 
@@ -342,7 +342,7 @@ class PrimBox(object):
             the index of the peeling/pasting trajectory
         """
         if self._frozen:
-            raise PRIMError("box has been frozen because PRIM has found at least one more recent box")
+            raise PrimError("box has been frozen because PRIM has found at least one more recent box")
         
         indices = in_box(self.prim.x[self.prim.yi_remaining], 
                          self._box_lims[i])

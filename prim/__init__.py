@@ -17,5 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from prim.prim_alg import Prim
-from prim.prim_objfcn import original, lenient1, lenient2
+from __future__ import absolute_import
+
+from .exceptions import PrimError
+from .prim_alg import Prim
+from .prim_objfcn import original, lenient1, lenient2
+
+__all__ = ["PrimError", "Prim", "original", "lenient1", "lenient2"]

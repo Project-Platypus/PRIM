@@ -26,12 +26,12 @@ import functools
 import numpy as np
 import numpy.lib.recfunctions as rf
 import pandas as pd
-from prim.exceptions import PRIMError
-from prim.prim_box import PrimBox
-from prim.prim_ops import real_peel, discrete_peel, categorical_peel
-from prim.prim_ops import real_paste, categorical_paste
-from prim.prim_objfcn import lenient1
-from prim.scenario_discovery_util import (make_box, compare,
+from .exceptions import PrimError
+from .prim_box import PrimBox
+from .prim_ops import real_peel, discrete_peel, categorical_peel
+from .prim_ops import real_paste, categorical_paste
+from .prim_objfcn import lenient1
+from .scenario_discovery_util import (make_box, compare,
         determine_nr_restricted_dims, determine_restricted_dims,
         OutputFormatterMixin)
 
@@ -197,7 +197,7 @@ class Prim(OutputFormatterMixin):
                 
         # validate inputs
         if len(y.shape) > 1:
-            raise PRIMError("y is not a 1-d array")
+            raise PrimError("y is not a 1-d array")
         
         unique_y = np.unique(y)
         
@@ -205,7 +205,7 @@ class Prim(OutputFormatterMixin):
                 (unique_y.shape[0] == 2 and (False not in unique_y or
                                              True not in unique_y)) or
                 (False not in unique_y and True not in unique_y)):
-            raise PRIMError("y must contain only two values (0/1 or False/True)")
+            raise PrimError("y must contain only two values (0/1 or False/True)")
             
         # store the parameters       
         self.x = x
@@ -315,7 +315,7 @@ class Prim(OutputFormatterMixin):
     
                 subsets[key] = list(value)
                 if (seen & value):
-                    raise PRIMError("uncertainty occurs in more then one subset")
+                    raise PrimError("uncertainty occurs in more then one subset")
                 else:
                     seen = seen | set(value)
             
@@ -500,7 +500,7 @@ class Prim(OutputFormatterMixin):
             dtype = self.x.dtype.fields.get(name)[0].name
             
             if dtype not in Prim.PEEL_OPERATIONS:
-                raise PRIMError("no peel operation defined for type %s" % dtype)
+                raise PrimError("no peel operation defined for type %s" % dtype)
             
             peels = Prim.PEEL_OPERATIONS[dtype](self, box, name)
             possible_peels += peels
@@ -551,7 +551,7 @@ class Prim(OutputFormatterMixin):
             dtype = self.x.dtype.fields.get(u)[0].name
             
             if dtype not in Prim.PASTE_OPERATIONS:
-                raise PRIMError("no paste operation defined for type %s" % dtype)
+                raise PrimError("no paste operation defined for type %s" % dtype)
             
             pastes = Prim.PASTE_OPERATIONS[dtype](self, box, u)
             [possible_pastes.append(entry) for entry in pastes] 
@@ -598,7 +598,7 @@ class Prim(OutputFormatterMixin):
         
         for key in keys:
             if dtypes[key][0] == np.dtype(object):
-                raise PRIMError("%s has dtype object and can thus not be rotated" %key)
+                raise PrimError("%s has dtype object and can thus not be rotated" %key)
         return True
 
     def _rotate_subset(self, value, orig_experiments, logical): 

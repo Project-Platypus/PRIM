@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.lib.recfunctions as recfunctions
 import pandas as pd
-from prim.plotting_util import COLOR_LIST
+from .plotting_util import COLOR_LIST
 
 def get_sorted_box_lims(boxes, box_init):
     '''Sort the uncertainties for each box in boxes based on a normalization

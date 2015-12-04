@@ -20,7 +20,7 @@
 from __future__ import absolute_import, division
 
 import numpy as np
-from prim.exceptions import PRIMError
+from .exceptions import PrimError
 
 def lenient1(y_old, y_new):
     """The default objective function (peeling criteria) used by PRIM.
@@ -71,7 +71,7 @@ def lenient1(y_old, y_new):
         elif y_old.shape[0] < y_new.shape[0]:
             obj = (mean_new-mean_old) / (y_new.shape[0]-y_old.shape[0])
         else:
-            raise PRIMError('''mean is different {} vs {}, while shape is the same,
+            raise PrimError('''mean is different {} vs {}, while shape is the same,
                                    this cannot be the case'''.format(mean_old, mean_new))
     return obj
 
@@ -102,7 +102,7 @@ def lenient2(y_old, y_new):
     obj = 0
     if mean_old != mean_new:
         if y_old.shape==y_new.shape:
-            raise PRIMError('''mean is different {} vs {}, while shape is the same,
+            raise PrimError('''mean is different {} vs {}, while shape is the same,
                                    this cannot be the case'''.format(mean_old, mean_new))
         
         change_mean = mean_new - mean_old

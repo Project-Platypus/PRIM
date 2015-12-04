@@ -22,7 +22,7 @@ from __future__ import absolute_import, division
 import copy
 import math
 import numpy as np
-from prim.scenario_discovery_util import in_box
+from .scenario_discovery_util import in_box
 
 def get_quantile(data, quantile):
     """Computes the given quantile of the dataset.
