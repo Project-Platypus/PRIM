@@ -42,17 +42,17 @@ trajectory.
 You can interact with the tradeoff plot by hovering the mouse over points
 to view the stats, as shown below.
 
-![Tradeoff plot](https://github.com/MOEAFramework/PRIM/docs/images/screenshot1.png)
+![Tradeoff plot](https://github.com/MOEAFramework/PRIM/blob/master/docs/images/screenshot1.png)
 
 Clicking a point opens a new window showing additional details in a separate
 window.
 
-![Details view](https://github.com/MOEAFramework/PRIM/docs/images/screenshot2.png)
+![Details view](https://github.com/MOEAFramework/PRIM/blob/master/docs/images/screenshot2.png)
 
 This module extends EMA Workbench's support for categorical data by allowing the
 categorical data to be plotted in the pairwise scatter plot:
 
-![Categorical data](https://github.com/MOEAFramework/PRIM/docs/images/screenshot3.png)
+![Categorical data](https://github.com/MOEAFramework/PRIM/blob/master/docs/images/screenshot3.png)
 
 Differences from EMA Workbench
 ------------------------------
