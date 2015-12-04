@@ -20,8 +20,6 @@
 from __future__ import absolute_import, division
 
 import logging
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 
 # .. codeauthor:: jhkwakkel <j.h.kwakkel (at) tudelft (dot) nl>
 

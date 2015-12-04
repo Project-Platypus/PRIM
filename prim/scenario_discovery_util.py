@@ -20,6 +20,7 @@
 from __future__ import absolute_import, print_function, division
 
 import abc
+import six
 import logging
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -78,7 +79,8 @@ def make_box(x):
     '''
     
     # get the types in the order they appear in the numpy array
-    types = [(v[1], k, v[0].name) for k, v in x.dtype.fields.iteritems()]
+    print(dir(x.dtype.fields))
+    types = [(v[1], k, v[0].name) for k, v in six.iteritems(x.dtype.fields)]
     types = sorted(types)
     
     # convert any bool types to object to store set(False, True)
