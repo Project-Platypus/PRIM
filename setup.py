@@ -22,6 +22,12 @@ setup(name='PRIM',
       license="GNU GPL version 3",
       url='https://github.com/Project-Platypus/PRIM',
       packages=['prim'],
+      install_requires=[
+          'matplotlib',
+          'numpy',
+          'pandas',
+          'mpldatacursor',
+          'six'],
       tests_require=['nose', 'mock'],
       cmdclass={'test': NoseTestCommand},
       classifiers=[
