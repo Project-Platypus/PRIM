@@ -15,6 +15,15 @@ Licensed under the GNU General Public License, version 3 or later.
 Usage
 -----
 
+Below shows the interactive use of the PRIM module for finding the first box.
+In this example, we are interested in cases where the response is greater
+than 0.5.  After creating the `Prim` object, we invoke `find_box()` to find
+the first box containing cases of interest followed by `box.show_tradeoff()`
+to display the tradeoff between coverage and density for each peeling/pasting
+trajectory.  You can interact with the plot by hovering the mouse over points
+to view the stats for a trajectory or click the point to view additional
+details in a separate window.
+
 ```python
 
     import prim
@@ -60,6 +69,11 @@ there are a number of differences.
 5. Convert peel, paste, and objective function (peeling criteria) methods into
    functions.  This is intended to allow extensibility.
    
-6. Support additional Numpy datatypes (only complex types are not supported).
+6. Support additional Numpy datatypes.  This include support for non-standard
+   int, unsigned int, and float types (e.g., float16 and float32) in addition
+   to boolean values (which is treated as categorical type).  Complex types are
+   not supported.
+   
+7. Scatter plot supports categorical data.
 
-7. Include `setup.py` script to automate installing module
+8. Include `setup.py` script to automate installing module

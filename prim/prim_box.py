@@ -31,7 +31,7 @@ from operator import itemgetter
 from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
 from prim.exceptions import PRIMError
-from prim.plotting_util import pairwise_scatter
+from prim.plotting_util import pairwise_labels
 from prim.scenario_discovery_util import (in_box, normalize, setup_figure,
         determine_nr_restricted_dims, determine_restricted_dims)
 
@@ -268,7 +268,8 @@ class PrimBox(object):
         bottom = []
         
         for i, v in enumerate(uncs):
-            if self.prim.x.dtype.fields[v][0].name == 'bool':
+            if (self.prim.x.dtype.fields[v][0].name == 'bool' or
+                    self.prim.x.dtype.fields[v][0].name == 'object'):
                 left.append(i)
                 height.append(-1)
                 bottom.append(0)
@@ -282,6 +283,7 @@ class PrimBox(object):
                 width = 0.6,
                 bottom = bottom,
                 align="center")
+        
         plt.ylim(0, 1)
         plt.xticks(left, uncs)
         plt.tick_params(axis='y',
@@ -291,7 +293,8 @@ class PrimBox(object):
                         labelleft='off')
         
         for i, v in enumerate(uncs):
-            if self.prim.x.dtype.fields[v][0].name == 'bool':
+            if (self.prim.x.dtype.fields[v][0].name == 'bool' or
+                    self.prim.x.dtype.fields[v][0].name == 'object'):
                 elements = sorted(list(box_lim_init[v][0]))
                 selected_elements = box_lim[v][0]
                 length = len(elements)
@@ -377,7 +380,6 @@ class PrimBox(object):
     
                 # plot limit text labels
                 x = norm_box_lim[j][0]
-    
                 if not np.allclose(x, 0):
                     label = "{: .2g}".format(self._box_lims[i][u][0])
                     ax.text(x-0.01, y, label, ha='right', va='center',
@@ -581,12 +583,12 @@ class PrimBox(object):
         cb.set_label("# of Restricted Dimensions")
         
         # enable mouse interaction
-        def handle_click(self, event):
+        def handle_click(event):
             i = event.ind[0]
             self.select(i)
             self.show_details().show()
             
-        def formatter(self, **kwargs):
+        def formatter(**kwargs):
             i = kwargs.get("ind")[0]
             data = self.peeling_trajectory.ix[i]
             return """Box %d
@@ -653,18 +655,164 @@ class PrimBox(object):
         -------
         the Matplotlib figure
         """   
-        fig = pairwise_scatter(self.prim.x[self.prim.yi_remaining],
-                                self.prim.y[self.prim.yi_remaining],
-                                self._box_lims[self._cur_box], 
-                                determine_restricted_dims(
-                                        self._box_lims[self._cur_box], 
-                                        self.prim._box_init),
-                                grid = grid)
+        fig = self._pairwise_scatter(
+                self.prim.x[self.prim.yi_remaining],
+                self.prim.y[self.prim.yi_remaining],
+                self._box_lims[self._cur_box], 
+                determine_restricted_dims(
+                        self._box_lims[self._cur_box], 
+                        self.prim._box_init),
+                grid = grid)
         
         title = "Peeling/Pasting Trajectory %d" % self._cur_box
         fig.suptitle(title, fontsize=16)
         fig.canvas.set_window_title(title)
         return fig
+    
+    def _pairwise_scatter(self, x, y, box_lim, restricted_dims, grid=None):
+        ''' helper function for pair wise scatter plotting
+        
+        Parameters
+        ----------
+        x : numpy structured array
+            the experiments
+        y : numpy array
+            the outcome of interest
+        box_lim : numpy structured array
+            a boxlim
+        restricted_dims : list of strings
+            list of uncertainties that define the boxlims
+        
+        '''
+        restricted_dims = list(restricted_dims)
+        combis = [(field1, field2) for field1 in restricted_dims\
+                                   for field2 in restricted_dims]
+    
+        if not grid:
+            grid = gridspec.GridSpec(len(restricted_dims), len(restricted_dims))                             
+            grid.update(wspace = 0.1,
+                        hspace = 0.1)    
+            figure = plt.figure()
+        else:
+            figure = plt.gcf()
+        
+        for field1, field2 in combis:
+            i = restricted_dims.index(field1)
+            j = restricted_dims.index(field2)
+            ax = figure.add_subplot(grid[i,j])  
+            
+            # scatter points
+            for n in [0,1]:
+                x_n = x[y==n]        
+                x_1 = x_n[field2]
+                x_2 = x_n[field1]
+                
+                if field1 == field2 and not len(restricted_dims) == 1:
+                    ec = 'white'
+                elif n == 0:
+                    ec = 'b'
+                else:
+                    ec = 'r'
+                    
+                # map categorical data onto the axes (bool is already mapped to
+                # 0/1)
+                if x.dtype.fields[field2][0].name == 'object':
+                    elements = sorted(list(self.prim._box_init[field2][0]))
+                    length = len(elements)
+                    x_1 = [elements.index(v) / (length-1) for v in x_1]
+                    
+                if x.dtype.fields[field1][0].name == 'object':
+                    elements = sorted(list(self.prim._box_init[field1][0]))
+                    length = len(elements)
+                    x_2 = [elements.index(v) / (length-1) for v in x_2]
+                
+                ax.scatter(x_1, x_2, facecolor=ec, edgecolor=ec, s=10)
+                
+                # provide appropriate labels for categorical data
+                if x.dtype.fields[field1][0].name == 'bool':
+                    ax.set_yticklabels(["False", "True"])
+                    ax.set_yticks([0, 1])
+                elif x.dtype.fields[field1][0].name == 'object':
+                    elements = sorted(list(self.prim._box_init[field1][0]))
+                    length = len(elements)
+                    ax.set_yticklabels(elements)
+                    ax.set_yticks([elements.index(v) / (length-1) for v in elements])
+                    
+                if x.dtype.fields[field2][0].name == 'bool':
+                    ax.set_xticklabels(["False", "True"])
+                    ax.set_xticks([0, 1])
+                elif x.dtype.fields[field2][0].name == 'object':
+                    elements = sorted(list(self.prim._box_init[field2][0]))
+                    length = len(elements)
+                    ax.set_xticklabels(elements)
+                    ax.set_xticks([elements.index(v) / (length-1) for v in elements])
+                
+            ax.autoscale(tight=True)
+    
+            # draw boxlim
+            if field1 != field2 or len(restricted_dims) == 1:
+                x_1 = box_lim[field2]
+                x_2 = box_lim[field1]
+
+                if ((x.dtype.fields.get(field1)[0].name == 'bool' or
+                        x.dtype.fields.get(field1)[0].name == 'object') and
+                    (x.dtype.fields.get(field2)[0].name == 'bool' or
+                        x.dtype.fields.get(field2)[0].name == 'object')):
+                    elements1 = sorted(list(self.prim._box_init[field1][0]))
+                    length1 = len(elements1)
+                    selected_elements1 = box_lim[field1][0]
+                    
+                    elements2 = sorted(list(self.prim._box_init[field2][0]))
+                    length2 = len(elements2)
+                    selected_elements2 = box_lim[field2][0]
+                    
+                    for e in selected_elements1:
+                        for f in selected_elements2:
+                            v1 = elements1.index(e) / (length1-1)
+                            v2 = elements2.index(f) / (length2-1)
+                            for n in [0,1]:
+                                ax.plot([v1 - 0.05, v1 + 0.05],
+                                        [v2 + (0.05 if n == 0 else -0.05)]*2,
+                                        c='k', linewidth=3)
+                                ax.plot([v1 + (0.05 if n == 0 else -0.05)]*2,
+                                        [v2 - 0.05, v2 + 0.05],
+                                        c='k', linewidth=3)
+                elif (x.dtype.fields.get(field2)[0].name == 'bool' or
+                        x.dtype.fields.get(field2)[0].name == 'object'):
+                    elements = sorted(list(self.prim._box_init[field2][0]))
+                    length = len(elements)
+                    selected_elements = box_lim[field2][0]
+                    
+                    for e in selected_elements:
+                        v = elements.index(e) / (length-1)
+                        for n in [0,1]:
+                            ax.plot([v - 0.05, v + 0.05], [x_2[n], x_2[n]],
+                                    c='k', linewidth=3)
+                            ax.plot([v + (0.05 if n == 0 else -0.05)]*2, x_2,
+                                    c='k', linewidth=3)
+                elif (x.dtype.fields.get(field1)[0].name == 'bool' or
+                        x.dtype.fields.get(field1)[0].name == 'object'):
+                    elements = sorted(list(self.prim._box_init[field1][0]))
+                    length = len(elements)
+                    selected_elements = box_lim[field1][0]
+                    
+                    for e in selected_elements:
+                        v = elements.index(e) / (length-1)
+                        for n in [0,1]:
+                            ax.plot([x_1[n], x_1[n]], [v - 0.05, v + 0.05],
+                                    c='k', linewidth=3)
+                            ax.plot(x_1, [v + (0.05 if n == 0 else -0.05)]*2,
+                                    c='k', linewidth=3)
+                else:
+                    for n in [0,1]:
+                        ax.plot(x_1, [x_2[n], x_2[n]], c='k', linewidth=3)
+                        ax.plot([x_1[n], x_1[n]], x_2, c='k', linewidth=3)
+                
+            # update labels and ticks
+            if len(restricted_dims) > 1:
+                pairwise_labels(ax, i, j, field1, field2, None, restricted_dims)
+                
+        return figure
 
     def _calculate_quasi_p(self, i):
         """Calculates quasi-p values as discussed in Bryant and Lempert (2010).
