@@ -21,24 +21,6 @@ from __future__ import absolute_import, division
 
 import logging
 
-# .. codeauthor:: jhkwakkel <j.h.kwakkel (at) tudelft (dot) nl>
-
-COLOR_LIST = ['b',
-              'g',
-              'r',
-              'c',
-              'm',
-              'y',
-              'k',
-              'b',
-              'g',
-              'r',
-              'c',
-              'm',
-              'y',
-              'k'
-                ]
-
 def pairwise_labels(ax, i, j, field1, field2, ylabels, outcomes_to_show):
     """Adds text and labels to pairwise scatter plot.
     

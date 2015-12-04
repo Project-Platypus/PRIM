@@ -27,6 +27,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import mpldatacursor
+from scipy.stats import binom
 from operator import itemgetter
 from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
@@ -722,8 +723,7 @@ class PrimBox(object):
     def _calculate_quasi_p(self, i):
         """Calculates quasi-p values as discussed in Bryant and Lempert (2010).
         
-        This is a one sided  binomial test.  Requires scipy.stats module to be
-        installed.
+        This is a one sided binomial test.
         
         Parameters
         ----------
@@ -735,8 +735,6 @@ class PrimBox(object):
         -------
         the quasi-p value
         """
-        from scipy.stats import binom
-        
         box_lim = self._box_lims[i]
         restricted_dims = list(determine_restricted_dims(
                 box_lim,

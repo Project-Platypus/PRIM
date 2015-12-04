@@ -31,11 +31,10 @@ from .prim_box import PrimBox
 from .prim_ops import real_peel, discrete_peel, categorical_peel
 from .prim_ops import real_paste, categorical_paste
 from .prim_objfcn import lenient1
-from .scenario_discovery_util import (make_box, compare,
-        determine_nr_restricted_dims, determine_restricted_dims,
-        OutputFormatterMixin)
+from .scenario_discovery_util import (make_box, compare, get_sorted_box_lims,
+        determine_nr_restricted_dims, determine_restricted_dims)
 
-class Prim(OutputFormatterMixin):
+class Prim(object):
     """Patient Rule Induction Method.
     
     This implementation of PRIM is designed for scenario discovery.  It is based
@@ -236,27 +235,6 @@ class Prim(OutputFormatterMixin):
         self._update_yi_remaining()
     
     @property
-    def boxes(self):
-        """Returns all PRIM boxes found thus far.
-        
-        Returns the PRIM boxes found and selected using :meth:`find_box`.  If
-        there are remaining cases of interest in the dataset, a final box is
-        included the remaining cases.
-        
-        Returns
-        -------
-        list of PRIM boxes
-        """
-        box_lims = [box.box_lim for box in self._boxes]
-        
-        if not box_lims:
-            return [self.box_init]
-        elif not np.all(compare(box_lims[-1], self.box_init)):
-            box_lims.append(self.box_init)
-            
-        return box_lims 
-    
-    @property
     def stats(self):
         """Returns the statistics for all PRIM boxes found thus far.
         
@@ -265,9 +243,59 @@ class Prim(OutputFormatterMixin):
         
         Returns
         -------
-        list of dict containing the box statistics
+        a Pandas DataFrame storing the stats for each box
         """
-        return [b.stats for b in self._boxes]
+        stats = [box.stats for box in self._boxes]
+        index = pd.Index(['Box %d' % (i+1) for i in range(len(stats))])
+        return pd.DataFrame(stats, index=index)
+    
+    @property
+    def limits(self):
+        """Returns the limits for all PRIM boxes found thus far.
+        
+        Returns the lower and upper limits for all PRIM boxes found and selected
+        using :meth:`find_box`.
+        
+        Returns
+        -------
+        a Pandas DataFrame storing the limits for each box
+        """
+        # collect the box limits into an array
+        box_lims = [box._box_lims[box._cur_box] for box in self._boxes]
+        
+        if not box_lims:
+            box_lims = [self._box_init]
+        elif not np.all(compare(box_lims[-1], self._box_init)):
+            box_lims.append(self._box_init)
+            
+        # determine the restricted dimensions
+        nr_boxes = len(box_lims)
+        box_lims, uncs = get_sorted_box_lims(box_lims, make_box(self.x))
+        
+        # determine the data type for the bounds
+        dtype = float
+        index = ["box {}".format(i+1) for i in range(nr_boxes)]
+        for value in box_lims[0].dtype.fields.values():
+            if value[0] == object:
+                dtype = object
+                break
+                
+        # create the data frame
+        columns = pd.MultiIndex.from_product([index,
+                                              ['min', 'max',]])
+        df_boxes = pd.DataFrame(np.zeros((len(uncs), nr_boxes*2)),
+                               index=uncs,
+                               dtype=dtype,
+                               columns=columns)
+
+        for i, box in enumerate(box_lims):
+            for unc in uncs:
+                values = box[unc][:]
+                values = pd.Series(values, 
+                                   index=['min', 'max'])
+                df_boxes.ix[unc][index[i]] = values  
+                 
+        return df_boxes 
     
     def perform_pca(self, subsets=None, exclude=set()):
         '''

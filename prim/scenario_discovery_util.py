@@ -19,15 +19,12 @@
 
 from __future__ import absolute_import, print_function, division
 
-import abc
 import six
 import logging
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.lib.recfunctions as recfunctions
-import pandas as pd
-from .plotting_util import COLOR_LIST
 
 def get_sorted_box_lims(boxes, box_init):
     '''Sort the uncertainties for each box in boxes based on a normalization
@@ -66,7 +63,6 @@ def get_sorted_box_lims(boxes, box_init):
     
     return box_lims, uncs.tolist()
 
-
 def make_box(x):
     '''
     Make a box that encompasses all the data
@@ -74,10 +70,7 @@ def make_box(x):
     Parameters
     ----------
     x : structured numpy array
-    
-    
     '''
-    
     # get the types in the order they appear in the numpy array
     types = [(v[1], k, v[0].name) for k, v in six.iteritems(x.dtype.fields)]
     types = sorted(types)
@@ -109,7 +102,6 @@ def make_box(x):
                
     return box  
 
-
 def normalize(box_lim, box_init, uncertainties):
     '''Normalize the given box lim to the unit interval derived
     from box init for the specified uncertainties.
@@ -129,10 +121,7 @@ def normalize(box_lim, box_init, uncertainties):
     -------
     ndarray
         a numpy array of the shape (2, len(uncertainties) with the box limits.
-    
-    
     '''
-    
     # normalize the range for the first box
     norm_box_lim = np.zeros((len(uncertainties), box_lim.shape[0]))
     
@@ -150,7 +139,6 @@ def normalize(box_lim, box_init, uncertainties):
             nu = a * upper + b
         norm_box_lim[i, :] = nl, nu
     return norm_box_lim
-
 
 def determine_restricted_dims(box_lims, box_init):
     '''
@@ -172,7 +160,6 @@ def determine_restricted_dims(box_lims, box_init):
                    dtype=object)
     dims = u[logical==False]
     return dims
-
 
 def determine_nr_restricted_dims(box_lims, box_init):
     '''
@@ -203,7 +190,6 @@ def compare(a, b):
                     (a[name][1] == b[name][1])
     return logical
 
-
 def setup_figure(uncs):
     '''
     
@@ -227,7 +213,6 @@ def setup_figure(uncs):
     ax.xaxis.set_ticks([0, 0.25, 0.5, 0.75, 1])
     ax.set_yticklabels(uncs[::-1]) 
     return fig, ax
-
 
 def in_box(x, boxlim):
     '''
@@ -280,146 +265,3 @@ def in_box(x, boxlim):
     indices = indices[0]
     
     return indices
-
-
-class OutputFormatterMixin(object):
-    __metaclass__ = abc.ABCMeta
-    
-    @abc.abstractproperty
-    def boxes(self):
-        '''Property for getting a list of box limits'''
-        
-        raise NotImplementedError
-    
-    @abc.abstractproperty
-    def stats(self):
-        '''property for getting a list of dicts containing the statistics
-        for each box'''
-        
-        raise NotImplementedError
-    
-    def boxes_to_dataframe(self):
-        '''convert boxes to pandas dataframe'''
-        
-        boxes = self.boxes
-            
-        # determine the restricted dimensions
-        # print only the restricted dimension
-        box_lims, uncs = get_sorted_box_lims(boxes, make_box(self.x))
-        nr_boxes = len(boxes)
-        dtype = float
-        index = ["box {}".format(i+1) for i in range(nr_boxes)]
-        for value in box_lims[0].dtype.fields.values():
-            if value[0] == object:
-                dtype = object
-                break
-                
-        columns = pd.MultiIndex.from_product([index,
-                                              ['min', 'max',]])
-        df_boxes = pd.DataFrame(np.zeros((len(uncs), nr_boxes*2)),
-                               index=uncs,
-                               dtype=dtype,
-                               columns=columns)
-
-        for i, box in enumerate(box_lims):
-            for unc in uncs:
-                values = box[unc][:]
-                values = pd.Series(values, 
-                                   index=['min','max'])
-                df_boxes.ix[unc][index[i]] = values   
-        return df_boxes 
-    
-    def stats_to_dataframe(self):
-        '''convert stats to pandas dataframe'''
-        
-        stats = self.stats
-        
-        index = pd.Index(['box {}'.format(i+1) for i in range(len(stats))])
-        
-        return pd.DataFrame(stats, index=index)
-    
-    def display_boxes(self, together=False):
-        '''display boxes
-        
-        Parameters
-        ----------
-        together : bool, otional
-        
-        '''
-        box_init = make_box(self.x)
-        box_lims, uncs = get_sorted_box_lims(self.boxes, box_init)
-
-        # normalize the box lims
-        # we don't need to show the last box, for this is the 
-        # box_init, which is visualized by a grey area in this
-        # plot.
-        norm_box_lims =  [normalize(box_lim, box_init, uncs) for 
-                box_lim in box_lims[0:-1]]
-                        
-        if together:
-            fig, ax = setup_figure(uncs)
-            
-            for i, u in enumerate(uncs):
-                # we want to have the most restricted dimension
-                # at the top of the figure
-                xi = len(uncs) - i - 1
-                
-                for j, norm_box_lim in enumerate(norm_box_lims):
-                    self._plot_unc(box_init, xi, i, j, norm_box_lim,
-                                   box_lims[j], u, ax)
-           
-            plt.tight_layout()
-            return fig
-        else:
-            figs = []
-            for j, norm_box_lim in enumerate(norm_box_lims):
-                fig, ax = setup_figure(uncs)
-                figs.append(fig)
-                for i, u in enumerate(uncs):
-                    xi = len(uncs) - i - 1
-                    self._plot_unc(box_init, xi, i, j, norm_box_lim, 
-                                   box_lims[j], u, ax)
-        
-                plt.tight_layout()
-            return figs
-    
-    @staticmethod  
-    def _plot_unc(box_init, xi, i, j, norm_box_lim, box_lim, u, ax):
-        '''
-        
-        Parameters:
-        ----------
-        xi : int 
-             the row at which to plot
-        i : int
-            the index of the uncertainty being plotted
-        j : int
-            the index of the box being plotted
-        u : string
-            the uncertainty being plotted:
-        ax : axes instance
-             the ax on which to plot
-        
-        '''
-
-        dtype = box_init[u].dtype
-            
-        y = xi-j*0.1
-        
-        if dtype == object:
-            elements = sorted(list(box_init[u][0]))
-            max_value = (len(elements)-1)
-            box_lim = box_lim[u][0]
-            x = [elements.index(entry) for entry in 
-                 box_lim]
-            x = [entry/max_value for entry in x]
-            y = [y] * len(x)
-            
-            ax.scatter(x,y,  edgecolor=COLOR_LIST[j],
-                       facecolor=COLOR_LIST[j])
-            
-        else:
-            ax.plot(norm_box_lim[i], (y, y),
-                    COLOR_LIST[j])
-        
-        

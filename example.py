@@ -16,7 +16,4 @@ else:
 
 #p = prim.Prim(df, lambda x : x["x1"]*x["x2"] + 0.3*(x["x3"] == "b"), threshold=0.5, threshold_type=">")
 p = prim.Prim(df, lambda x : x["x1"]*x["x2"] + 0.3*x["x3"], threshold=0.5, threshold_type=">")
-box = p.find_box()
-print(box)
-box.show_tradeoff()
-plt.show()
+boxes = p.find_all()
