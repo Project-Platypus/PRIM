@@ -17,7 +17,8 @@ Usage
 
 Below shows the interactive use of the PRIM module for finding the first box.
 In this example, we are interested in cases where the response is greater
-than 0.5.  After creating the `Prim` object, we invoke `find_box()` to find
+than 0.5 (as indicated by the `threshold` and `threshold_type` arguments).
+After creating the `Prim` object, we invoke `find_box()` to find
 the first box containing cases of interest followed by `box.show_tradeoff()`
 to display the tradeoff between coverage and density for each peeling/pasting
 trajectory.
@@ -44,8 +45,7 @@ to view the stats, as shown below.
 
 ![Tradeoff plot](https://github.com/MOEAFramework/PRIM/blob/master/docs/images/screenshot1.png)
 
-Clicking a point opens a new window showing additional details in a separate
-window.
+Clicking a point shows additional details in a separate window.
 
 ![Details view](https://github.com/MOEAFramework/PRIM/blob/master/docs/images/screenshot2.png)
 
