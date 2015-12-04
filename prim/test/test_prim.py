@@ -248,8 +248,6 @@ class TestPrimBox(unittest.TestCase):
         prim_obj = Prim(x, y, threshold=0.5)
         box_init = prim_obj._box_init
         
-        print box_init
-          
         # some test on the box
         self.assertTrue(box_init['a'][0]==0)
         self.assertTrue(box_init['a'][1]==3)
