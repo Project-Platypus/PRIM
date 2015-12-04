@@ -17,5 +17,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from prim_alg import Prim
-from prim_objfcn import original, lenient1, lenient2
+from prim.prim_alg import Prim
+from prim.prim_objfcn import original, lenient1, lenient2
