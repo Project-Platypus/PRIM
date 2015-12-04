@@ -54,6 +54,9 @@ categorical data to be plotted in the pairwise scatter plot:
 
 ![Categorical data](https://github.com/MOEAFramework/PRIM/blob/master/docs/images/screenshot3.png)
 
+Also note the Prev / Next buttons on this window allowing navigation to adjacent
+peeling trajectories without having to return to the tradeoff plot.
+
 Differences from EMA Workbench
 ------------------------------
 
@@ -72,21 +75,23 @@ there are a number of differences.
    peeling trajectory.  Instead, you first call `box.select(i)` to select
    the i-th peeling trajectory, then call any other method to see the details
    of the trajectory (`print(box)`, `box.show_details()`,
-   `box.stats`, etc.)
+   `box.stats`, etc.).
    
 4. Improved init method for `Prim`.  It can now handle a variety of inputs,
    such as Pandas data frames, Numpy matrices, or any list-like object.  The
    `setup_prim` function was removed and its functionality is now part of
    the init method.
    
-5. Convert peel, paste, and objective function (peeling criteria) methods into
-   functions.  This is intended to allow extensibility.
+5. Converted the peel, paste, and objective function (peeling criteria) methods,
+   which were previously part of the `Prim` class, into separate functions.
+   This is intended to allow extensibility.
    
-6. Support additional Numpy datatypes.  This include support for non-standard
+6. Supports additional Numpy datatypes.  This include support for non-standard
    int, unsigned int, and float types (e.g., float16 and float32) in addition
    to boolean values (which is treated as categorical type).  Complex types are
    not supported.
    
-7. Scatter plot supports categorical data.
+7. The pairwise scatter plot can now display categorical data and overlay the
+   box limits.
 
-8. Include `setup.py` script to automate installing module
+8. Include `setup.py` script to automate installing module.
