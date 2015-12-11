@@ -21,6 +21,18 @@ from __future__ import absolute_import, division
 
 import logging
 
+def format_number(value):
+    if isinstance(value, int):
+        fmt = "%d"
+    elif -10 <= value <= 10:
+        fmt = "%.2f"
+    elif -1000 <= value <= 1000:
+        fmt = "%.1f"
+    else:
+        fmt = "%.2g"
+        
+    return fmt % value
+
 def pairwise_labels(ax, i, j, field1, field2, ylabels, outcomes_to_show):
     """Adds text and labels to pairwise scatter plot.
     

@@ -32,7 +32,7 @@ from operator import itemgetter
 from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
 from .exceptions import PrimError
-from .plotting_util import pairwise_labels
+from .plotting_util import pairwise_labels, format_number
 from .scenario_discovery_util import (in_box, normalize,
         determine_nr_restricted_dims, determine_restricted_dims)
 
@@ -47,18 +47,23 @@ def indent(lines, amount, ch=' '):
     padding = amount * ch
     return padding + ('\n'+padding).join(lines.split('\n'))
 
-class CurEntry(object):
-    '''a descriptor for the current entry on the peeling and pasting 
-    trajectory'''
+class PrimBoxProperty(object):
+    """Generate read-only attributes for a PrimBox"""
     
-    def __init__(self, name):
-        self.name = name
-        
-    def __get__(self, instance, owner):
-        return instance.peeling_trajectory[self.name][instance._cur_box]
-    
-    def __set__(self, instance, value):
-        raise PrimError("this property cannot be assigned to")
+    def __init__(self, attribute, doc=None):
+        self.attribute = attribute
+        self.__doc__ = doc
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+        return obj.peeling_trajectory[self.attribute][obj._cur_box]
+
+    def __set__(self, obj, value):
+        raise AttributeError("can't set attribute")
+
+    def __delete__(self, obj):
+        raise AttributeError("can't delete attribute")
 
 class PrimBox(object):
     '''A class that holds information over a specific box 
@@ -86,11 +91,11 @@ class PrimBox(object):
     
     '''
     
-    coverage = CurEntry('coverage')
-    density = CurEntry('density')
-    mean = CurEntry('mean')
-    res_dim = CurEntry('res dim')
-    mass = CurEntry('mass')
+    coverage = PrimBoxProperty('coverage')
+    density = PrimBoxProperty('density')
+    mean = PrimBoxProperty('mean')
+    res_dim = PrimBoxProperty('res dim')
+    mass = PrimBoxProperty('mass')
     
     def __init__(self, prim, box_lims, indices):
         """Create a new PrimBox object.
@@ -262,7 +267,7 @@ class PrimBox(object):
         
         box_lim_init = self.prim._box_init
         box_lim = self._box_lims[i]
-        norm_box_lim =  normalize(box_lim, box_lim_init, uncs)
+        norm_box_lim = normalize(box_lim, box_lim_init, uncs)
         
         left = []
         height = []
@@ -283,7 +288,9 @@ class PrimBox(object):
                 height,
                 width = 0.6,
                 bottom = bottom,
-                align="center")
+                align="center",
+                color='r',
+                alpha=0.6)
         
         plt.ylim(0, 1)
         plt.xticks(left, uncs)
@@ -313,18 +320,25 @@ class PrimBox(object):
         fig = plt.gcf()
         ax = plt.gca()
         
-        for i, _ in enumerate(uncs):
-            ax.text(i - 0.15,
-                    norm_box_lim[i][0], "%0.2f" % norm_box_lim[i][0],
-                    horizontalalignment='center',
-                    verticalalignment='bottom',
-                    color='w')
-            
-            ax.text(i + 0.15,
-                    norm_box_lim[i][1], "%0.2f" % norm_box_lim[i][1],
-                    horizontalalignment='center',
-                    verticalalignment='top',
-                    color='w')
+        for i, unc in enumerate(uncs):
+            if (self.prim.x.dtype.fields[v][0].name != 'bool' and
+                    self.prim.x.dtype.fields[v][0].name != 'object'):
+                # be sure to convert the normalized bounds back to original
+                l, u = box_lim[unc]
+                
+                ax.text(i - 0.15,
+                        norm_box_lim[i][0],
+                        format_number(l*10),
+                        horizontalalignment='center',
+                        verticalalignment='bottom',
+                        color='k')
+                
+                ax.text(i + 0.15,
+                        norm_box_lim[i][1],
+                        format_number(u),
+                        horizontalalignment='center',
+                        verticalalignment='top',
+                        color='k')
             
         ax.set_title("Restricted Dimensions")
             
