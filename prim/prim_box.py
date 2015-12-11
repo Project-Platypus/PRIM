@@ -48,7 +48,7 @@ def indent(lines, amount, ch=' '):
     return padding + ('\n'+padding).join(lines.split('\n'))
 
 class PrimBoxProperty(object):
-    """Generate read-only attributes for a PrimBox"""
+    """Generate read-only attributes for a PrimBox."""
     
     def __init__(self, attribute, doc=None):
         self.attribute = attribute

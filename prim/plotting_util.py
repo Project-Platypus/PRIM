@@ -22,6 +22,17 @@ from __future__ import absolute_import, division
 import logging
 
 def format_number(value):
+    """Formats the min/max bounds of restricted dimensions.
+    
+    Parameters
+    ----------
+    value : int or float
+        the numeric limit
+    
+    Returns
+    -------
+    the formatted string representing the value
+    """
     if isinstance(value, int):
         fmt = "%d"
     elif -10 <= value <= 10:
