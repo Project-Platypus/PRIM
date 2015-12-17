@@ -13,6 +13,30 @@ Licensed under the GNU General Public License, version 3 or later.
 
 [![Build Status](https://travis-ci.org/Project-Platypus/Platypus.svg?branch=master)](https://travis-ci.org/Project-Platypus/Platypus)
 
+[![PyPI](https://img.shields.io/pypi/v/PRIM.svg)]()
+
+[![PyPI](https://img.shields.io/pypi/dm/PRIM.svg)]()
+
+Installation
+------------
+
+The PRIM module is available on PyPI and can be installed using `easy_install`:
+
+    easy_install prim
+    
+or PIP:
+
+    pip install prim
+    
+The latest development version can be installed by cloning this repository
+and running:
+
+    python setup.py install
+    
+This module requires several dependencies, including `numpy`, `pandas`,
+`mpldatacursor`, `six`, and `scipy`.  If experiencing trouble installing
+these dependencies, we recommend using [Anaconda Python](https://www.continuum.io/downloads).
+
 Usage
 -----
 
@@ -88,7 +112,7 @@ there are a number of differences.
    This is intended to allow extensibility.
    
 6. Supports additional Numpy datatypes.  This include support for non-standard
-   int, unsigned int, and float types (e.g., float16 and float32) in addition
+   int, unsigned int, and float types (e.g., int16 and float32) in addition
    to boolean values (which is treated as categorical type).  Complex types are
    not supported.
    
