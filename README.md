@@ -12,8 +12,8 @@ created and maintained by David Hadka.
 Licensed under the GNU General Public License, version 3 or later.
 
 [![Build Status](https://travis-ci.org/Project-Platypus/Platypus.svg?branch=master)](https://travis-ci.org/Project-Platypus/Platypus)
-[![PyPI](https://img.shields.io/pypi/v/PRIM.svg)]()
-[![PyPI](https://img.shields.io/pypi/dm/PRIM.svg)]()
+[![PyPI](https://img.shields.io/pypi/v/PRIM.svg)](https://pypi.python.org/pypi/PRIM)
+[![PyPI](https://img.shields.io/pypi/dm/PRIM.svg)](https://pypi.python.org/pypi/PRIM)
 
 Installation
 ------------
