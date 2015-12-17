@@ -131,7 +131,7 @@ class Prim(object):
         elif isinstance(x, np.ma.MaskedArray):
             pass
         else:
-            x = np.asarray(x)
+            x = pd.DataFrame(x).to_records(index=False)
             
         # if y is a string or function, compute the actual response value
         # otherwise, ensure y is a numpy matrix/array

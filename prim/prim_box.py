@@ -504,22 +504,23 @@ class PrimBox(object):
         
         # enable mouse interaction
         def handle_click(event):
-            i = event.ind[0]
-            self.select(i)
-            self.show_details().show()
+            if hasattr(event, "ind"):
+                i = event.ind[0]
+                self.select(i)
+                self.show_details().show()
             
         def formatter(**kwargs):
             i = kwargs.get("ind")[0]
             data = self.peeling_trajectory.ix[i]
-            return """Box %d
-                   Coverage: %2.1f%%
-                   Density: %2.1f%%
-                   Mass: %2.1f%%
-                   Res Dim: %d""" % (i,
+            return ("Box %d\n" +
+                    "Coverage: %2.1f%%\n" +
+                    "Density: %2.1f%%\n" +
+                    "Mass: %2.1f%%\n" +
+                    "Res Dim: %d" % (i,
                                      100*data["coverage"],
                                      100*data["density"],
                                      100*data["mass"],
-                                     data["res dim"])
+                                     data["res dim"]))
         
         mpldatacursor.datacursor(formatter=formatter, hover=True)
         fig.canvas.mpl_connect('pick_event', handle_click)
