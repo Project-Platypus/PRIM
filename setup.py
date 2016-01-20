@@ -15,7 +15,7 @@ class NoseTestCommand(TestCommand):
         nose.run_exit(argv=['nosetests'])
 
 setup(name='PRIM',
-      version='0.1',
+      version='0.2',
       description='Patient Rule Induction Method for Python',
       author='David Hadka',
       author_email='dhadka@users.noreply.github.com',
