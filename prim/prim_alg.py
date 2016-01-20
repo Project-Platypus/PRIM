@@ -28,8 +28,8 @@ import numpy.lib.recfunctions as rf
 import pandas as pd
 from .exceptions import PrimError
 from .prim_box import PrimBox
-from .prim_ops import real_peel, discrete_peel, categorical_peel
-from .prim_ops import real_paste, categorical_paste
+from .prim_ops import (real_peel, discrete_peel, categorical_peel,
+        real_paste, categorical_paste)
 from .prim_objfcn import lenient1
 from .scenario_discovery_util import (make_box, compare, get_sorted_box_lims,
         determine_nr_restricted_dims, determine_restricted_dims)

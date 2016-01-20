@@ -512,15 +512,15 @@ class PrimBox(object):
         def formatter(**kwargs):
             i = kwargs.get("ind")[0]
             data = self.peeling_trajectory.ix[i]
-            return ("Box %d\n" +
-                    "Coverage: %2.1f%%\n" +
-                    "Density: %2.1f%%\n" +
-                    "Mass: %2.1f%%\n" +
-                    "Res Dim: %d" % (i,
-                                     100*data["coverage"],
-                                     100*data["density"],
-                                     100*data["mass"],
-                                     data["res dim"]))
+            return (("Box %d\n" +
+                     "Coverage: %2.1f%%\n" +
+                     "Density: %2.1f%%\n" +
+                     "Mass: %2.1f%%\n" +
+                     "Res Dim: %d") % (i,
+                                       100*data["coverage"],
+                                       100*data["density"],
+                                       100*data["mass"],
+                                       data["res dim"]))
         
         mpldatacursor.datacursor(formatter=formatter, hover=True)
         fig.canvas.mpl_connect('pick_event', handle_click)
