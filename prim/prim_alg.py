@@ -88,7 +88,8 @@ class Prim(object):
                  paste_alpha = 0.05,
                  mass_min = 0.05, 
                  include = None,
-                 exclude = None):
+                 exclude = None,
+                 coi = None):
         """Creates a new PRIM object.
         
         The PRIM object maintains the current state of the PRIM algorithm,
@@ -123,6 +124,9 @@ class Prim(object):
             the names of variables included in the PRIM analysis
         exclude : list of str
             the names of variables excluded from the PRIM analysis
+        coi : str or list of str
+            if y contains strings, coi identifies which string is the case of
+            interest
         """
         
         # Ensure the input x is a numpy matrix/array
@@ -200,11 +204,17 @@ class Prim(object):
         
         unique_y = np.unique(y)
         
-        if (unique_y.shape[0] > 2 or 
-                (unique_y.shape[0] == 2 and (False not in unique_y or
-                                             True not in unique_y)) or
-                (False not in unique_y and True not in unique_y)):
+        if unique_y.shape[0] > 2:
             raise PrimError("y must contain only two values (0/1 or False/True)")
+        
+        if ((unique_y.shape[0] == 2 and (False not in unique_y or True not in unique_y)) or
+                (False not in unique_y and True not in unique_y)):
+            if coi is None:
+                raise PrimError("y must contain only two values (0/1 or False/True)")
+            else:
+                if not hasattr(coi, "__iter__") and not isinstance(coi, six.string_types):
+                    coi = [coi]
+                y = np.asarray([1 if yi in coi else 0 for yi in y])
             
         # store the parameters       
         self.x = x
