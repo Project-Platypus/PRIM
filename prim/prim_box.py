@@ -328,7 +328,7 @@ class PrimBox(object):
                 
                 ax.text(i - 0.15,
                         norm_box_lim[i][0],
-                        format_number(l*10),
+                        format_number(l),
                         horizontalalignment='center',
                         verticalalignment='bottom',
                         color='k')

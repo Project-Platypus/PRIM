@@ -35,6 +35,8 @@ def format_number(value):
     """
     if isinstance(value, int):
         fmt = "%d"
+    elif -1 <= value <= 1:
+        fmt = "%.3f"
     elif -10 <= value <= 10:
         fmt = "%.2f"
     elif -1000 <= value <= 1000:
