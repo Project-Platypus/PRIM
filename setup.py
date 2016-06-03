@@ -15,9 +15,9 @@ class NoseTestCommand(TestCommand):
         nose.run_exit(argv=['nosetests'])
 
 setup(name='PRIM',
-      version='0.2',
+      version='0.3',
       description='Patient Rule Induction Method for Python',
-      author='David Hadka',
+      author='David Hadka, based on PRIM code by Jan Kwakkel (EMA Workbench)',
       author_email='dhadka@users.noreply.github.com',
       license="GNU GPL version 3",
       url='https://github.com/Project-Platypus/PRIM',
