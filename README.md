@@ -4,10 +4,11 @@ Patient Rule Induction Method for Python
 This module implements the Patient Rule Induction Method (PRIM) for scenario
 discovery in Python.  This is a standalone version of the PRIM algorithm
 implemented in the [EMA Workbench](https://github.com/quaquel/EMAworkbench) by
-Jan Kwakkel, which is itself derived from the
+Jan Kwakkel, which is based on the
 [sdtoolkit](https://cran.r-project.org/web/packages/sdtoolkit/index.html) R
-package developed by RAND Corporation.  This standalone version of PRIM was
-created and maintained by David Hadka.
+package developed by RAND Corporation.  All credit goes to Jan Kwakkel for
+developing the original code.  This standalone version of PRIM was created and
+maintained by David Hadka.
 
 Licensed under the GNU General Public License, version 3 or later.
 

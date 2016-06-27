@@ -15,8 +15,15 @@ class NoseTestCommand(TestCommand):
         nose.run_exit(argv=['nosetests'])
 
 setup(name='PRIM',
-      version='0.3',
-      description='Patient Rule Induction Method for Python',
+      version='0.4',
+      description='''This module implements the Patient Rule Induction Method
+                   (PRIM) for scenario discovery in Python.  This is a
+                   standalone version of the PRIM algorithm implemented in the
+                   EMA Workbench by Jan Kwakkel, which is based on the
+                   sdtoolkit R package developed by RAND Corporation.  All
+                   credit goes to Jan Kwakkel for developing the original code.
+                   This standalone version of PRIM was created and maintained
+                   by David Hadka.''',
       author='David Hadka, based on PRIM code by Jan Kwakkel (EMA Workbench)',
       author_email='dhadka@users.noreply.github.com',
       license="GNU GPL version 3",

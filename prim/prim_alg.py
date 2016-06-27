@@ -189,10 +189,10 @@ class Prim(object):
                 # arguments for built-in operators.  Thus, we must assign the
                 # threshold to the first position and use a different operator.
                 # For example, "x > 0.5" must be evaluated as "0.5 < x".
-                OPERATORS = {"<" : operator.ge,
-                             ">" : operator.le,
-                             "<=" : operator.gt,
-                             ">=" : operator.lt,
+                OPERATORS = {"<=" : operator.ge,
+                             ">=" : operator.le,
+                             "<" : operator.gt,
+                             ">" : operator.lt,
                              "=" : operator.eq}
                 
                 op = OPERATORS[threshold_type]
