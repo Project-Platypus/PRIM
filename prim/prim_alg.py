@@ -405,7 +405,7 @@ class Prim(object):
         self.row_names = row_names
         
         self.x = np.ma.array(rotated_experiments)
-        self.box_init = make_box(self.x)
+        self._box_init = make_box(self.x)
     
     def find_box(self):
         """Execute one iteration of the PRIM algorithm.
