@@ -511,7 +511,7 @@ class PrimBox(object):
             
         def formatter(**kwargs):
             i = kwargs.get("ind")[0]
-            data = self.peeling_trajectory.ix[i]
+            data = self.peeling_trajectory.loc[i]
             return (("Box %d\n" +
                      "Coverage: %2.1f%%\n" +
                      "Density: %2.1f%%\n" +
