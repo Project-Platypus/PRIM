@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools >= 63.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PRIM"
+description = "Patient Rule Induction Method for Python"
+authors = [
+  { name="David Hadka", email="dhadka@users.noreply.github.com" },
+]
+readme = "README.md"
+license = { file="COPYING" }
+requires-python = ">= 3.6"
+dependencies = ["matplotlib",
+  "numpy",
+  "pandas",
+  "mplcursors",
+  "six",
+  "scipy"]
+dynamic = ["version"]  # Version is read from prim/__init__.py
+
+[project.urls]
+"Homepage" = "https://github.com/Project-Platypus/PRIM"
+"Bug Tracker" = "https://github.com/Project-Platypus/PRIM/issues"
+
+[project.optional-dependencies]
+test = ["pytest", "mock"]
+
+[tool.setuptools.dynamic]
+version = {attr = "prim.__version__"}
