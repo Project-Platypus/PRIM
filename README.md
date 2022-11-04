@@ -33,7 +33,7 @@ and running:
     python setup.py install
     
 This module requires several dependencies, including `numpy`, `pandas`,
-`mpldatacursor`, `six`, and `scipy`.  If experiencing trouble installing
+`mplcursors`, `six`, and `scipy`.  If experiencing trouble installing
 these dependencies, we recommend using [Anaconda Python](https://www.continuum.io/downloads).
 
 Usage

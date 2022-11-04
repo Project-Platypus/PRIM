@@ -26,7 +26,7 @@ import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import mpldatacursor
+import mplcursors
 from scipy.stats import binom
 from operator import itemgetter
 from matplotlib.widgets import Button
@@ -412,8 +412,7 @@ class PrimBox(object):
                         self.prim._box_init),
                 "mass" : y.shape[0]/self.prim.n}
         
-        self.peeling_trajectory = self.peeling_trajectory.append(
-                pd.DataFrame([stats]), 
+        self.peeling_trajectory = pd.concat([self.peeling_trajectory, pd.DataFrame([stats])], 
                 ignore_index=True)
         
         self._cur_box = len(self.peeling_trajectory)-1
@@ -509,9 +508,9 @@ class PrimBox(object):
                 self.select(i)
                 self.show_details().show()
             
-        def formatter(**kwargs):
-            i = kwargs.get("ind")[0]
-            data = self.peeling_trajectory.ix[i]
+        def formatter(sel):
+            i = sel.index
+            data = self.peeling_trajectory.iloc[i]
             return (("Box %d\n" +
                      "Coverage: %2.1f%%\n" +
                      "Density: %2.1f%%\n" +
@@ -522,7 +521,10 @@ class PrimBox(object):
                                        100*data["mass"],
                                        data["res dim"]))
         
-        mpldatacursor.datacursor(formatter=formatter, hover=True)
+        c = mplcursors.cursor(p, hover=True)
+        c.connect(
+            "add", lambda sel: sel.annotation.set_text(formatter(sel)))
+
         fig.canvas.mpl_connect('pick_event', handle_click)
         
         # enable tooltips on IPython Notebook
@@ -587,7 +589,7 @@ class PrimBox(object):
         
         title = "Peeling/Pasting Trajectory %d" % self._cur_box
         fig.suptitle(title, fontsize=16)
-        fig.canvas.set_window_title(title)
+        fig.canvas.manager.set_window_title(title)
         return fig
     
     def _pairwise_scatter(self, x, y, box_lim, restricted_dims, grid=None):
