@@ -182,7 +182,7 @@ def compare(a, b):
     '''compare two boxes, for each dimension return True if the
     same and false otherwise'''
     dtypesDesc = a.dtype.descr
-    logical = np.ones((len(dtypesDesc,)), dtype=np.bool)
+    logical = np.ones((len(dtypesDesc,)), dtype=bool)
     for i, entry in enumerate(dtypesDesc):
         name = entry[0]
         logical[i] = logical[i] &\
@@ -232,7 +232,7 @@ def in_box(x, boxlim):
         valid numpy indices on x
     
     '''
-    logical = np.ones(x.shape[0], dtype=np.bool)
+    logical = np.ones(x.shape[0], dtype=bool)
     
     dims = recfunctions.get_names(boxlim.dtype)
 
@@ -241,7 +241,7 @@ def in_box(x, boxlim):
         
         if value == 'object' or value == 'bool':
             entries = boxlim[name][0]
-            l = np.ones( (x.shape[0], len(entries)), dtype=np.bool)
+            l = np.ones( (x.shape[0], len(entries)), dtype=bool)
             for i,entry in enumerate(entries):
                 if type(list(entries)[0]) not in (str, float, int):
                     bools = []                

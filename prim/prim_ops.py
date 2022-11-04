@@ -300,7 +300,7 @@ def real_paste(prim, box, name):
         dtype = box_paste.dtype.fields[name][0]
         
         if dtype==np.int32:
-            paste_value = np.int(paste_value)
+            paste_value = int(paste_value)
         
         box_paste[name][1 if direction == 'upper' else 0] = paste_value
         indices = in_box(x, box_paste)
