@@ -16,25 +16,22 @@ Licensed under the GNU General Public License, version 3 or later.
 [![PyPI](https://img.shields.io/pypi/v/PRIM.svg)](https://pypi.python.org/pypi/PRIM)
 [![PyPI](https://img.shields.io/pypi/dm/PRIM.svg)](https://pypi.python.org/pypi/PRIM)
 
-Installation
-------------
+### Installation
 
-The PRIM module is available on PyPI and can be installed using `easy_install`:
+To install the latest Platypus release, run the following command:
 
-    easy_install prim
-    
-or PIP:
-
+```
     pip install prim
-    
-The latest development version can be installed by cloning this repository
-and running:
+```
 
-    python setup.py install
-    
-This module requires several dependencies, including `numpy`, `pandas`,
-`mplcursors`, `six`, and `scipy`.  If experiencing trouble installing
-these dependencies, we recommend using [Anaconda Python](https://www.continuum.io/downloads).
+To install the latest development version of Platypus, run the following commands:
+
+```
+    pip install -U build setuptools
+    git clone https://github.com/Project-Platypus/PRIM.git
+    cd PRIM
+    python -m build
+```
 
 Usage
 -----
@@ -117,5 +114,3 @@ there are a number of differences.
    
 7. The pairwise scatter plot can now display categorical data and overlay the
    box limits.
-
-8. Include `setup.py` script to automate installing module.
