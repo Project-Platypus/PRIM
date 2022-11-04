@@ -52,4 +52,9 @@ from .exceptions import PrimError
 from .prim_alg import Prim
 from .prim_objfcn import original, lenient1, lenient2
 
+# To release a new version of this package, update the version below, merge,
+# and create a tag with the same version number.  The release pipeline will
+# handle the rest!
+__version__ = "0.5.0"
+
 __all__ = ["PrimError", "Prim", "original", "lenient1", "lenient2"]

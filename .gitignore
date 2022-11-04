@@ -1,1 +1,3 @@
 *.pyc
+PRIM.egg-info/**
+build/**

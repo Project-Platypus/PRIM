@@ -1,0 +1,3 @@
+include COPYING example.py
+recursive-include prim/tests *.py
+prune dist

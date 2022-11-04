@@ -12,7 +12,7 @@ maintained by David Hadka.
 
 Licensed under the GNU General Public License, version 3 or later.
 
-[![Build Status](https://travis-ci.org/Project-Platypus/Platypus.svg?branch=master)](https://travis-ci.org/Project-Platypus/Platypus)
+<a href="https://github.com/Project-Platypus/PRIM"><img alt="GitHub Actions status" src="https://github.com/Project-Platypus/PRIM/workflows/Tests/badge.svg?branch=master&event=push"></a>
 [![PyPI](https://img.shields.io/pypi/v/PRIM.svg)](https://pypi.python.org/pypi/PRIM)
 [![PyPI](https://img.shields.io/pypi/dm/PRIM.svg)](https://pypi.python.org/pypi/PRIM)
 
@@ -33,7 +33,7 @@ and running:
     python setup.py install
     
 This module requires several dependencies, including `numpy`, `pandas`,
-`mpldatacursor`, `six`, and `scipy`.  If experiencing trouble installing
+`mplcursors`, `six`, and `scipy`.  If experiencing trouble installing
 these dependencies, we recommend using [Anaconda Python](https://www.continuum.io/downloads).
 
 Usage

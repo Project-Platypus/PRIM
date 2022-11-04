@@ -138,7 +138,7 @@ class Prim(object):
             x = pd.DataFrame(x).to_records(index=False)
 
         # Convert names to str since numpy chokes on unicode field names
-        x.dtype.names = map(str, x.dtype.names)
+        x.dtype.names = list(map(str, x.dtype.names))
             
         # if y is a string or function, compute the actual response value
         # otherwise, ensure y is a numpy matrix/array
@@ -306,7 +306,7 @@ class Prim(object):
                 values = box[unc][:]
                 values = pd.Series(values, 
                                    index=['min', 'max'])
-                df_boxes.ix[unc][index[i]] = values  
+                df_boxes.iloc[unc][index[i]] = values  
                  
         return df_boxes 
     
@@ -513,7 +513,7 @@ class Prim(object):
         '''
         
         # set the indices
-        logical = np.ones(self.yi.shape[0],dtype=np.bool )
+        logical = np.ones(self.yi.shape[0],dtype=bool )
         for box in self._boxes:
             logical[box.yi] = False
         self.yi_remaining = self.yi[logical]
