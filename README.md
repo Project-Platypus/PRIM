@@ -18,13 +18,13 @@ Licensed under the GNU General Public License, version 3 or later.
 
 ### Installation
 
-To install the latest Platypus release, run the following command:
+To install the latest PRIM release, run the following command:
 
 ```
     pip install prim
 ```
 
-To install the latest development version of Platypus, run the following commands:
+To install the latest development version of PRIM, run the following commands:
 
 ```
     pip install -U build setuptools
