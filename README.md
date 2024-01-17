@@ -31,6 +31,7 @@ To install the latest development version of PRIM, run the following commands:
     git clone https://github.com/Project-Platypus/PRIM.git
     cd PRIM
     python -m build
+    python -m pip install --editable .
 ```
 
 Usage
