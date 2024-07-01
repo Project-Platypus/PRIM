@@ -281,7 +281,7 @@ class TestPrimBox(unittest.TestCase):
          
         x['a'] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.5, 0.7, 0.8, np.nan, 1.0]
         x['b'] = [0,1,2,3,4,5,6,7,8,9]
-        x['c'] = ['a','b','a','b',np.NAN,'a','b','a','b','a', ]
+        x['c'] = ['a','b','a','b',np.nan,'a','b','a','b','a', ]
          
         x = np.ma.array(x)
         x['a'] = np.ma.masked_invalid(x['a'])
