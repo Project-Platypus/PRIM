@@ -233,7 +233,7 @@ class TestPrimBox(unittest.TestCase):
   
         # test init box with NANS
         x = np.array([(0,1,2),
-                      (2,5,np.NAN),
+                      (2,5,np.nan),
                       (3,2,7)], 
                      dtype=[('a', float),
                             ('b', float),
