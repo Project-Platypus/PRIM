@@ -203,7 +203,7 @@ class TestPrimBox(unittest.TestCase):
         self.assertTrue(get_quantile(data, 0.1)==1.5)
         self.assertTrue(get_quantile(data, 0.05)==1.5)        
         
-        data = np.ma.array([1,1,2,3,4,5,6,7,8,9,9, np.NAN], 
+        data = np.ma.array([1,1,2,3,4,5,6,7,8,9,9, np.nan], 
                            mask=[0,0,0,0,0,0,0,0,0,0,0,1])
         self.assertTrue(get_quantile(data, 0.9)==8.5)
         self.assertTrue(get_quantile(data, 0.95)==8.5)
@@ -233,7 +233,7 @@ class TestPrimBox(unittest.TestCase):
   
         # test init box with NANS
         x = np.array([(0,1,2),
-                      (2,5,np.NAN),
+                      (2,5,np.nan),
                       (3,2,7)], 
                      dtype=[('a', float),
                             ('b', float),
@@ -279,9 +279,9 @@ class TestPrimBox(unittest.TestCase):
         dtype = [('a', float),('b', int), ('c', object)]
         x = np.empty((10, ), dtype=dtype)
          
-        x['a'] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.5, 0.7, 0.8, np.NAN, 1.0]
+        x['a'] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.5, 0.7, 0.8, np.nan, 1.0]
         x['b'] = [0,1,2,3,4,5,6,7,8,9]
-        x['c'] = ['a','b','a','b',np.NAN,'a','b','a','b','a', ]
+        x['c'] = ['a','b','a','b',np.nan,'a','b','a','b','a', ]
          
         x = np.ma.array(x)
         x['a'] = np.ma.masked_invalid(x['a'])
