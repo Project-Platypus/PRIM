@@ -29,3 +29,7 @@ test = ["pytest", "mock"]
 
 [tool.setuptools.dynamic]
 version = {attr = "prim.__version__"}
+
+[tool.pytest.ini_options]
+addopts = "-rA -Werror"
+testpaths = ["prim"]

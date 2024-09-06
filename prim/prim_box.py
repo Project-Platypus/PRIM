@@ -404,16 +404,16 @@ class PrimBox(object):
         self._box_lims.append(box_lims)
         coi = self.prim.determine_coi(self.yi)
 
-        stats = {"coverage" : coi/self.prim.t_coi, 
-                "density" : coi/y.shape[0],  
-                "mean" : np.mean(y),
-                "res dim" : determine_nr_restricted_dims(
-                        self._box_lims[-1], 
-                        self.prim._box_init),
-                "mass" : y.shape[0]/self.prim.n}
+        print(self.prim.t_coi, y.shape[0], self.prim.n)
+
+        stats = pd.DataFrame([{"coverage": coi/self.prim.t_coi, 
+                               "density": coi/y.shape[0],  
+                               "mean": np.mean(y),
+                               "res dim": determine_nr_restricted_dims(self._box_lims[-1], self.prim._box_init),
+                               "mass": y.shape[0]/self.prim.n}])
         
-        self.peeling_trajectory = pd.concat([self.peeling_trajectory, pd.DataFrame([stats])], 
-                ignore_index=True)
+        self.peeling_trajectory = stats if self.peeling_trajectory.empty else \
+            pd.concat([self.peeling_trajectory, stats], ignore_index=True)
         
         self._cur_box = len(self.peeling_trajectory)-1
         
