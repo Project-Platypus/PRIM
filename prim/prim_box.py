@@ -30,8 +30,8 @@ from matplotlib.widgets import Button
 from mpl_toolkits.axes_grid1 import host_subplot
 from .exceptions import PrimError
 from .plotting_util import pairwise_labels, format_number
-from .scenario_discovery_util import (in_box, normalize,
-        determine_nr_restricted_dims, determine_restricted_dims)
+from .scenario_discovery_util import in_box, normalize, \
+    determine_nr_restricted_dims, determine_restricted_dims
 
 try:
     import mpld3
@@ -63,7 +63,7 @@ class PrimBoxProperty(object):
         raise AttributeError("can't delete attribute")
 
 class PrimBox(object):
-    '''A class that holds information over a specific box 
+    '''A class that holds information over a specific box
     
     Attributes
     ----------
@@ -76,7 +76,7 @@ class PrimBox(object):
     res_dim : int
               number of restricted dimensions of currently selected box
     mass : float
-           mass of currently selected box 
+           mass of currently selected box
     peeling_trajectory : pandas dataframe
                          stats for each box in peeling trajectory
     box_lims : list
@@ -147,11 +147,11 @@ class PrimBox(object):
     @property
     def stats(self):
         """Returns the statistics for the current peeling/pasting trajectory."""
-        return {"coverage" : self.coverage,
-                "density" : self.density,
-                "mean" : self.mean,
-                "res dim" : self.res_dim,
-                "mass" : self.mass}
+        return {"coverage": self.coverage,
+                "density": self.density,
+                "mean": self.mean,
+                "res dim": self.res_dim,
+                "mass": self.mass}
     
     @property
     def limits(self):
@@ -164,8 +164,8 @@ class PrimBox(object):
         uncs.sort(key=itemgetter(1))
         uncs = [uncs[0] for uncs in uncs]
         
-        box_lim = pd.DataFrame(np.zeros((len(uncs), 3)), 
-                               index=uncs, 
+        box_lim = pd.DataFrame(np.zeros((len(uncs), 3)),
+                               index=uncs,
                                columns=['min', 'max', 'qp values'])
         
         for unc in uncs:
@@ -206,12 +206,16 @@ class PrimBox(object):
         fig.add_subplot(ax0)
           
         inner_grid = gridspec.GridSpecFromSubplotSpec(n, n,
-            subplot_spec=outer_grid[0], wspace=0.1, hspace=0.1)  
+                                                      subplot_spec=outer_grid[0],
+                                                      wspace=0.1,
+                                                      hspace=0.1)
           
         self.show_scatter(grid=inner_grid)
           
         inner_grid = gridspec.GridSpecFromSubplotSpec(2, 1,
-            subplot_spec=outer_grid[1], wspace=0.0, hspace=0.0)
+                                                      subplot_spec=outer_grid[1],
+                                                      wspace=0.0,
+                                                      hspace=0.0)
           
         ax1 = plt.Subplot(fig, inner_grid[0])
           
@@ -281,10 +285,10 @@ class PrimBox(object):
                 height.append(norm_box_lim[i][1]-norm_box_lim[i][0])
                 bottom.append(norm_box_lim[i][0])
         
-        plt.bar(left, 
+        plt.bar(left,
                 height,
-                width = 0.6,
-                bottom = bottom,
+                width=0.6,
+                bottom=bottom,
                 align="center",
                 color='r',
                 alpha=0.6)
@@ -356,7 +360,7 @@ class PrimBox(object):
         if self._frozen:
             raise PrimError("box has been frozen because PRIM has found at least one more recent box")
         
-        indices = in_box(self.prim.x[self.prim.yi_remaining], 
+        indices = in_box(self.prim.x[self.prim.yi_remaining],
                          self._box_lims[i])
         self.yi = self.prim.yi_remaining[indices]
         self._cur_box = i
@@ -376,7 +380,7 @@ class PrimBox(object):
         new_box_lim = copy.deepcopy(self._box_lims[self._cur_box])
         new_box_lim[name][:] = self._box_lims[0][name][:]
         
-        indices = in_box(self.prim.x[self.prim.yi_remaining], 
+        indices = in_box(self.prim.x[self.prim.yi_remaining],
                          new_box_lim)
         indices = self.prim.yi_remaining[indices]
         
@@ -386,7 +390,7 @@ class PrimBox(object):
         """Updates this box with new limits.
         
         Adds the given limits to the peeling/pasting trajectory for this box
-        and selects this trajectory.  
+        and selects this trajectory.
         
         Parameters
         ----------
@@ -401,10 +405,8 @@ class PrimBox(object):
         self._box_lims.append(box_lims)
         coi = self.prim.determine_coi(self.yi)
 
-        print(self.prim.t_coi, y.shape[0], self.prim.n)
-
-        stats = pd.DataFrame([{"coverage": coi/self.prim.t_coi, 
-                               "density": coi/y.shape[0],  
+        stats = pd.DataFrame([{"coverage": coi/self.prim.t_coi,
+                               "density": coi/y.shape[0],
                                "mean": np.mean(y),
                                "res dim": determine_nr_restricted_dims(self._box_lims[-1], self.prim._box_init),
                                "mass": y.shape[0]/self.prim.n}])
@@ -472,17 +474,17 @@ class PrimBox(object):
         ax = fig.add_subplot(111, aspect='equal')
         
         # setup the color map for coloring the number of restricted dimensions
-        cmap = mpl.cm.YlGnBu_r #@UndefinedVariable
-        boundaries = np.arange(-0.5, 
-                               max(self.peeling_trajectory['res dim'])+1.5, 
+        cmap = mpl.cm.YlGnBu_r  # @UndefinedVariable
+        boundaries = np.arange(-0.5,
+                               max(self.peeling_trajectory['res dim'])+1.5,
                                step=1)
         ncolors = cmap.N
         norm = mpl.colors.BoundaryNorm(boundaries, ncolors)
         
         # plot the tradeoff
-        p = ax.scatter(self.peeling_trajectory['coverage'], 
-                       self.peeling_trajectory['density'], 
-                       c=self.peeling_trajectory['res dim'], 
+        p = ax.scatter(self.peeling_trajectory['coverage'],
+                       self.peeling_trajectory['density'],
+                       c=self.peeling_trajectory['res dim'],
                        norm=norm,
                        cmap=cmap,
                        picker=True)
@@ -492,8 +494,8 @@ class PrimBox(object):
         ax.set_ylim(0, 1.2)
         ax.set_xlim(0, 1.2)
         
-        ticklocs = np.arange(0, 
-                             max(self.peeling_trajectory['res dim'])+1, 
+        ticklocs = np.arange(0,
+                             max(self.peeling_trajectory['res dim'])+1,
                              step=1)
         cb = fig.colorbar(p, spacing='uniform', ticks=ticklocs, drawedges=True)
         cb.set_label("# of Restricted Dimensions")
@@ -545,22 +547,22 @@ class PrimBox(object):
               border: 1px solid black;
               text-align: right;
             }
-            """   
+            """
             
             labels = []
-            columns_to_include = ['coverage','density', 'mass', 'res dim']
-            frmt = lambda x: '{:.2f}'.format( x )
+            columns_to_include = ['coverage', 'density', 'mass', 'res dim']
+            frmt = lambda x: '{:.2f}'.format(x)
             
             for i in range(len(self.peeling_trajectory['coverage'])):
                 label = self.peeling_trajectory.ix[[i], columns_to_include]
                 label.columns = ["Coverage", "Density", "Mass", "Res. Dim."]
                 label = label.T
                 label.columns = ["Box {0}".format(i)]
-                labels.append(str(label.to_html(float_format=frmt)))       
+                labels.append(str(label.to_html(float_format=frmt)))
     
-            tooltip = mpld3.plugins.PointHTMLTooltip(p, labels, voffset=10, 
-                                                     hoffset=10, css=css)  
-            mpld3.plugins.connect(fig, tooltip)        
+            tooltip = mpld3.plugins.PointHTMLTooltip(p, labels, voffset=10,
+                                                     hoffset=10, css=css)
+            mpld3.plugins.connect(fig, tooltip)
         
         return fig
     
@@ -574,15 +576,15 @@ class PrimBox(object):
         Returns
         -------
         the Matplotlib figure
-        """   
+        """
         fig = self._pairwise_scatter(
                 self.prim.x[self.prim.yi_remaining],
                 self.prim.y[self.prim.yi_remaining],
-                self._box_lims[self._cur_box], 
+                self._box_lims[self._cur_box],
                 determine_restricted_dims(
-                        self._box_lims[self._cur_box], 
+                        self._box_lims[self._cur_box],
                         self.prim._box_init),
-                grid = grid)
+                grid=grid)
         
         title = "Peeling/Pasting Trajectory %d" % self._cur_box
         fig.suptitle(title, fontsize=16)
@@ -605,13 +607,13 @@ class PrimBox(object):
         
         '''
         restricted_dims = list(restricted_dims)
-        combis = [(field1, field2) for field1 in restricted_dims\
+        combis = [(field1, field2) for field1 in restricted_dims
                                    for field2 in restricted_dims]
     
         if not grid:
-            grid = gridspec.GridSpec(len(restricted_dims), len(restricted_dims))                             
-            grid.update(wspace = 0.1,
-                        hspace = 0.1)    
+            grid = gridspec.GridSpec(len(restricted_dims), len(restricted_dims))
+            grid.update(wspace=0.1,
+                        hspace=0.1)
             figure = plt.figure()
         else:
             figure = plt.gcf()
@@ -619,11 +621,11 @@ class PrimBox(object):
         for field1, field2 in combis:
             i = restricted_dims.index(field1)
             j = restricted_dims.index(field2)
-            ax = figure.add_subplot(grid[i,j])  
+            ax = figure.add_subplot(grid[i, j])
             
             # scatter points
-            for n in [0,1]:
-                x_n = x[y==n]        
+            for n in [0, 1]:
+                x_n = x[y == n]
                 x_1 = x_n[field2]
                 x_2 = x_n[field1]
                 
@@ -690,7 +692,7 @@ class PrimBox(object):
                         for f in selected_elements2:
                             v1 = elements1.index(e) / (length1-1)
                             v2 = elements2.index(f) / (length2-1)
-                            for n in [0,1]:
+                            for n in [0, 1]:
                                 ax.plot([v1 - 0.05, v1 + 0.05],
                                         [v2 + (0.05 if n == 0 else -0.05)]*2,
                                         c='k', linewidth=3)
@@ -705,7 +707,7 @@ class PrimBox(object):
                     
                     for e in selected_elements:
                         v = elements.index(e) / (length-1)
-                        for n in [0,1]:
+                        for n in [0, 1]:
                             ax.plot([v - 0.05, v + 0.05], [x_2[n], x_2[n]],
                                     c='k', linewidth=3)
                             ax.plot([v + (0.05 if n == 0 else -0.05)]*2, x_2,
@@ -718,13 +720,13 @@ class PrimBox(object):
                     
                     for e in selected_elements:
                         v = elements.index(e) / (length-1)
-                        for n in [0,1]:
+                        for n in [0, 1]:
                             ax.plot([x_1[n], x_1[n]], [v - 0.05, v + 0.05],
                                     c='k', linewidth=3)
                             ax.plot(x_1, [v + (0.05 if n == 0 else -0.05)]*2,
                                     c='k', linewidth=3)
                 else:
-                    for n in [0,1]:
+                    for n in [0, 1]:
                         ax.plot(x_1, [x_2[n], x_2[n]], c='k', linewidth=3)
                         ax.plot([x_1[n], x_1[n]], x_2, c='k', linewidth=3)
                 
@@ -742,7 +744,7 @@ class PrimBox(object):
         Parameters
         ----------
         i : int
-            the specific box in the peeling trajectory for which the quasi-p 
+            the specific box in the peeling trajectory for which the quasi-p
             values are to be calculated.
         
         Returns
@@ -755,10 +757,10 @@ class PrimBox(object):
                 self.prim._box_init))
         
         # total nr. of cases in box
-        Tbox = self.peeling_trajectory['mass'][i] * self.prim.n 
+        Tbox = self.peeling_trajectory['mass'][i] * self.prim.n
         
         # total nr. of cases of interest in box
-        Hbox = self.peeling_trajectory['coverage'][i] * self.prim.t_coi  
+        Hbox = self.peeling_trajectory['coverage'][i] * self.prim.t_coi
         
         qp_values = {}
         
@@ -766,14 +768,14 @@ class PrimBox(object):
             temp_box = copy.deepcopy(box_lim)
             temp_box[u] = self._box_lims[0][u]
             
-            indices = in_box(self.prim.x[self.prim.yi_remaining], 
+            indices = in_box(self.prim.x[self.prim.yi_remaining],
                              temp_box)
             indices = self.prim.yi_remaining[indices]
             
             # total nr. of cases in box with one restriction removed
-            Tj = indices.shape[0]  
+            Tj = indices.shape[0]
             
-            # total nr. of cases of interest in box with one restriction 
+            # total nr. of cases of interest in box with one restriction
             # removed
             Hj = np.sum(self.prim.y[indices])
             
@@ -786,4 +788,3 @@ class PrimBox(object):
             qp_values[u] = qp
             
         return qp_values
-    

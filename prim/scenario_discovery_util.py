@@ -25,7 +25,7 @@ import numpy.lib.recfunctions as recfunctions
 def get_sorted_box_lims(boxes, box_init):
     '''Sort the uncertainties for each box in boxes based on a normalization
     given box_init. Unrestricted dimensions are dropped. The sorting is based
-    on the normalization of the first box in boxes. 
+    on the normalization of the first box in boxes.
     
     Parameters
     ----------
@@ -34,7 +34,7 @@ def get_sorted_box_lims(boxes, box_init):
     
     Returns
     -------
-    tuple 
+    tuple
         with the sorted boxes, and the list of restricted uncertainties
     
     '''
@@ -43,16 +43,16 @@ def get_sorted_box_lims(boxes, box_init):
     # in one or more boxes
     uncs = set()
     for box in boxes:
-        us  = determine_restricted_dims(box, box_init).tolist()
+        us = determine_restricted_dims(box, box_init).tolist()
         uncs = uncs.union(us)
     uncs = np.asarray(list(uncs))
 
     # normalize the range for the first box
     box_lim = boxes[0]
     nbl = normalize(box_lim, box_init, uncs)
-    box_size = nbl[:,1]-nbl[:,0]
+    box_size = nbl[:, 1]-nbl[:, 0]
     
-    # sort the uncertainties based on the normalized size of the 
+    # sort the uncertainties based on the normalized size of the
     # restricted dimensions
     uncs = uncs[np.argsort(box_size)]
     box_lims = [box for box in boxes]
@@ -96,21 +96,21 @@ def make_box(x):
             box[name][0] = np.min(values, axis=0)
             box[name][1] = np.max(values, axis=0)
                
-    return box  
+    return box
 
 def normalize(box_lim, box_init, uncertainties):
     '''Normalize the given box lim to the unit interval derived
     from box init for the specified uncertainties.
     
     Categorical uncertainties are normalized based on fractionated. So
-    value specifies the fraction of categories in the box_lim. 
+    value specifies the fraction of categories in the box_lim.
     
     Parameters
     ----------
     box_lim : a numpy structured array.
     box_init :  a numpy structured array.
     uncertainties : list of strings
-                    valid names of columns that exist in both structured 
+                    valid names of columns that exist in both structured
                     arrays.
 
     Returns
@@ -123,8 +123,8 @@ def normalize(box_lim, box_init, uncertainties):
     
     for i, u in enumerate(uncertainties):
         dtype = box_lim.dtype.fields[u][0]
-        if dtype ==np.dtype(object):
-            nu = len(box_lim[u][0])/ len(box_init[u][0])
+        if dtype == np.dtype(object):
+            nu = len(box_lim[u][0]) / len(box_init[u][0])
             nl = 0
         else:
             lower, upper = box_lim[u]
@@ -139,7 +139,7 @@ def normalize(box_lim, box_init, uncertainties):
 def determine_restricted_dims(box_lims, box_init):
     '''
     
-    determine which dimensions of the given box are restricted compared 
+    determine which dimensions of the given box are restricted compared
     to compared to the initial box that contains all the data
     
     Parameters
@@ -152,9 +152,9 @@ def determine_restricted_dims(box_lims, box_init):
     '''
 
     logical = compare(box_init, box_lims)
-    u = np.asarray(recfunctions.get_names(box_lims.dtype), 
+    u = np.asarray(recfunctions.get_names(box_lims.dtype),
                    dtype=object)
-    dims = u[logical==False]
+    dims = u[logical == False]
     return dims
 
 def determine_nr_restricted_dims(box_lims, box_init):
@@ -181,9 +181,9 @@ def compare(a, b):
     logical = np.ones((len(dtypesDesc,)), dtype=bool)
     for i, entry in enumerate(dtypesDesc):
         name = entry[0]
-        logical[i] = logical[i] &\
-                    (a[name][0] == b[name][0]) &\
-                    (a[name][1] == b[name][1])
+        logical[i] = logical[i] & \
+            (a[name][0] == b[name][0]) & \
+            (a[name][1] == b[name][1])
     return logical
 
 def setup_figure(uncs):
@@ -199,21 +199,21 @@ def setup_figure(uncs):
     
     # create the shaded grey background
     rect = mpl.patches.Rectangle((0, -0.5), 1, nr_unc+1.5,
-                                 alpha=0.25,  
+                                 alpha=0.25,
                                  facecolor="#C0C0C0",
                                  edgecolor="#C0C0C0")
     ax.add_patch(rect)
     ax.set_xlim(xmin=-0.2, xmax=1.2)
-    ax.set_ylim(ymin= -0.5, ymax=nr_unc-0.5)
+    ax.set_ylim(ymin=-0.5, ymax=nr_unc-0.5)
     ax.yaxis.set_ticks([y for y in range(nr_unc)])
     ax.xaxis.set_ticks([0, 0.25, 0.5, 0.75, 1])
-    ax.set_yticklabels(uncs[::-1]) 
+    ax.set_yticklabels(uncs[::-1])
     return fig, ax
 
 def in_box(x, boxlim):
     '''
      
-    returns the indices of the data points that are within the 
+    returns the indices of the data points that are within the
     box_lims.
     
     Parameters
@@ -237,10 +237,10 @@ def in_box(x, boxlim):
         
         if value == 'object' or value == 'bool':
             entries = boxlim[name][0]
-            l = np.ones( (x.shape[0], len(entries)), dtype=bool)
-            for i,entry in enumerate(entries):
+            l = np.ones((x.shape[0], len(entries)), dtype=bool)
+            for i, entry in enumerate(entries):
                 if type(list(entries)[0]) not in (str, float, int):
-                    bools = []                
+                    bools = []
                     for element in list(x[name]):
                         if element == entry:
                             bools.append(True)
@@ -252,12 +252,12 @@ def in_box(x, boxlim):
             l = np.any(l, axis=1)
             logical = logical & l
         else:
-            logical = logical & (boxlim[name][0] <= x[name] )&\
-                                        (x[name] <= boxlim[name][1])                
+            logical = logical & (boxlim[name][0] <= x[name]) & \
+                                        (x[name] <= boxlim[name][1])
     
-    indices = np.where(logical==True)
+    indices = np.where(logical == True)
     
-    assert len(indices)==1
+    assert len(indices) == 1
     indices = indices[0]
     
     return indices

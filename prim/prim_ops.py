@@ -55,13 +55,13 @@ def get_quantile(data, quantile):
 
     if quantile > 0.5:
         # upper
-        while (data[index_lower] == data[index_upper]) and (index_lower>0):
+        while (data[index_lower] == data[index_upper]) and (index_lower > 0):
             index_lower -= 1
             
         value = (data[index_lower]+data[index_upper])/2
     else:
         # lower
-        while (data[index_lower] == data[index_upper]) and (index_upper<len(data)-1):
+        while (data[index_lower] == data[index_upper]) and (index_upper < len(data)-1):
             index_upper += 1
             
         value = (data[index_lower]+data[index_upper])/2
@@ -154,7 +154,7 @@ def discrete_peel(prim, box, name):
         box_peel = get_quantile(x, peel_alpha)
         box_peel = int(box_peel)
 
-        # determine logical associated with peel value            
+        # determine logical associated with peel value
         if direction == 'lower':
             if box_peel == limits[0]:
                 logical = (x > limits[0]) &\
@@ -177,12 +177,12 @@ def discrete_peel(prim, box, name):
             else:
                 new_limit = np.min(x)
         else:
-            if direction =='upper':
+            if direction == 'upper':
                 new_limit = np.max(x[logical])
             else:
-                new_limit = np.min(x[logical])            
+                new_limit = np.min(x[logical])
         
-        indices = box.yi[logical] 
+        indices = box.yi[logical]
         temp_box = copy.deepcopy(box._box_lims[-1])
         temp_box[name][index] = new_limit
         peels.append((indices, temp_box))
@@ -222,7 +222,7 @@ def categorical_peel(prim, box, name):
             temp_box[name][:] = peel
             
             if type(list(entries)[0]) not in (str, float, int):
-                bools = []   
+                bools = []
                              
                 for element in list(x):
                     if element != entry:
@@ -264,7 +264,7 @@ def real_paste(prim, box, name):
     pastes = []
     for direction in ['lower', 'upper']:
         box_paste = np.copy(limits)
-        paste_box = np.copy(limits) # box containing data candidate for pasting
+        paste_box = np.copy(limits)  # box containing data candidate for pasting
         
         if direction == 'upper':
             paste_box[name][0] = paste_box[name][1]
@@ -285,8 +285,7 @@ def real_paste(prim, box, name):
             
             indices = in_box(x, paste_box)
             data = x[indices][name]
-            
-            
+
             if data.shape[0] > 0:
                 paste_value = get_quantile(data, 1-prim.paste_alpha)
             else:
@@ -296,7 +295,7 @@ def real_paste(prim, box, name):
 
         dtype = box_paste.dtype.fields[name][0]
         
-        if dtype==np.int32:
+        if dtype == np.int32:
             paste_value = int(paste_value)
         
         box_paste[name][1 if direction == 'upper' else 0] = paste_value

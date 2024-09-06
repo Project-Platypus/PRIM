@@ -24,11 +24,11 @@ import numpy.lib.recfunctions as rf
 import pandas as pd
 from .exceptions import PrimError
 from .prim_box import PrimBox
-from .prim_ops import (real_peel, discrete_peel, categorical_peel,
-        real_paste, categorical_paste)
+from .prim_ops import real_peel, discrete_peel, categorical_peel, \
+    real_paste, categorical_paste
 from .prim_objfcn import lenient1
-from .scenario_discovery_util import (make_box, compare, get_sorted_box_lims,
-        determine_nr_restricted_dims, determine_restricted_dims)
+from .scenario_discovery_util import make_box, compare, get_sorted_box_lims, \
+    determine_nr_restricted_dims, determine_restricted_dims
 
 class Prim(object):
     """Patient Rule Induction Method.
@@ -43,49 +43,49 @@ class Prim(object):
     variables will be handled appropriately.  Internally, this implementation
     uses Numpy.  The class-level dicts PEEL_OPERATIONS and PASTE_OPERATIONS map
     each Numpy datatype to a peeling or pasting operation appropriate for that
-    datatype.   
+    datatype.
     """
     
-    PEEL_OPERATIONS = {'object' : categorical_peel,
-                       'bool' : categorical_peel,
-                       'int8' : discrete_peel,
-                       'int16' : discrete_peel,
-                       'int32' : discrete_peel,
-                       'int64' : discrete_peel,
-                       'uint8' : discrete_peel,
-                       'uint16' : discrete_peel,
-                       'uint32' : discrete_peel,
-                       'uint64' : discrete_peel,
-                       'float16' : real_peel,
-                       'float32' : real_peel,
-                       'float64' : real_peel}
+    PEEL_OPERATIONS = {'object': categorical_peel,
+                       'bool': categorical_peel,
+                       'int8': discrete_peel,
+                       'int16': discrete_peel,
+                       'int32': discrete_peel,
+                       'int64': discrete_peel,
+                       'uint8': discrete_peel,
+                       'uint16': discrete_peel,
+                       'uint32': discrete_peel,
+                       'uint64': discrete_peel,
+                       'float16': real_peel,
+                       'float32': real_peel,
+                       'float64': real_peel}
 
-    PASTE_OPERATIONS = {'object' : categorical_paste,
-                        'bool' : categorical_paste,
-                        'int8' : discrete_peel,
-                        'int16' : real_paste,
-                        'int32' : real_paste,
-                        'int64' : real_paste,
-                        'uint8' : discrete_peel,
-                        'uint16' : real_paste,
-                        'uint32' : real_paste,
-                        'uint64' : real_paste,
-                        'float16' : real_paste,
-                        'float32' : real_paste,
-                        'float64' : real_paste} 
+    PASTE_OPERATIONS = {'object': categorical_paste,
+                        'bool': categorical_paste,
+                        'int8': discrete_peel,
+                        'int16': real_paste,
+                        'int32': real_paste,
+                        'int64': real_paste,
+                        'uint8': discrete_peel,
+                        'uint16': real_paste,
+                        'uint32': real_paste,
+                        'uint64': real_paste,
+                        'float16': real_paste,
+                        'float32': real_paste,
+                        'float64': real_paste}
     
-    def __init__(self, 
+    def __init__(self,
                  x,
-                 y, 
-                 threshold = None, 
-                 threshold_type = ">",
-                 obj_func = lenient1, 
-                 peel_alpha = 0.05, 
-                 paste_alpha = 0.05,
-                 mass_min = 0.05, 
-                 include = None,
-                 exclude = None,
-                 coi = None):
+                 y,
+                 threshold=None,
+                 threshold_type=">",
+                 obj_func=lenient1,
+                 peel_alpha=0.05,
+                 paste_alpha=0.05,
+                 mass_min=0.05,
+                 include=None,
+                 exclude=None,
+                 coi=None):
         """Creates a new PRIM object.
         
         The PRIM object maintains the current state of the PRIM algorithm,
@@ -110,7 +110,7 @@ class Prim(object):
             comparison operator used whwen identifying cases of interest
         obj_func : callable (default: lenient1)
             a function that computes the objective function (peeling criteria)
-        peel_alpha : float (default: 0.05) 
+        peel_alpha : float (default: 0.05)
             parameter controlling the peeling stage
         paste_alpha : float (default: 0.05)
             parameter controlling the pasting stage
@@ -161,7 +161,7 @@ class Prim(object):
             include = [include]
             
         if exclude and isinstance(exclude, str):
-            exclude = [exclude]     
+            exclude = [exclude]
             
         # include or exclude columns from the analysis
         if include:
@@ -175,10 +175,10 @@ class Prim(object):
             if isinstance(exclude, str):
                 exclude = [exclude]
 
-            drop_names = set(exclude) 
+            drop_names = set(exclude)
             x = rf.drop_fields(x, drop_names, asrecarray=True)
             
-        # apply the threshold if 
+        # apply the threshold if
         if threshold:
             if callable(threshold):
                 y = np.apply_along_axis(threshold, 0, y)
@@ -188,11 +188,11 @@ class Prim(object):
                 # arguments for built-in operators.  Thus, we must assign the
                 # threshold to the first position and use a different operator.
                 # For example, "x > 0.5" must be evaluated as "0.5 < x".
-                OPERATORS = {"<=" : operator.ge,
-                             ">=" : operator.le,
-                             "<" : operator.gt,
-                             ">" : operator.lt,
-                             "=" : operator.eq}
+                OPERATORS = {"<=": operator.ge,
+                             ">=": operator.le,
+                             "<": operator.gt,
+                             ">": operator.lt,
+                             "=": operator.eq}
                 
                 op = OPERATORS[threshold_type]
                 y = np.apply_along_axis(functools.partial(op, threshold), 0, y)
@@ -215,13 +215,13 @@ class Prim(object):
                     coi = [coi]
                 y = np.asarray([1 if yi in coi else 0 for yi in y])
             
-        # store the parameters       
+        # store the parameters
         self.x = x
         self.y = y
         self.paste_alpha = paste_alpha
         self.peel_alpha = peel_alpha
         self.mass_min = mass_min
-        self.threshold = threshold 
+        self.threshold = threshold
         self.threshold_type = threshold_type
         self.obj_func = obj_func
        
@@ -293,58 +293,58 @@ class Prim(object):
         columns = pd.MultiIndex.from_product([index,
                                               ['min', 'max',]])
         df_boxes = pd.DataFrame(np.zeros((len(uncs), nr_boxes*2)),
-                               index=uncs,
-                               dtype=dtype,
-                               columns=columns)
+                                index=uncs,
+                                dtype=dtype,
+                                columns=columns)
 
         for i, box in enumerate(box_lims):
             for unc in uncs:
                 values = box[unc][:]
-                values = pd.Series(values, 
+                values = pd.Series(values,
                                    index=['min', 'max'])
-                df_boxes.iloc[unc][index[i]] = values  
+                df_boxes.iloc[unc][index[i]] = values
                  
-        return df_boxes 
+        return df_boxes
     
     def perform_pca(self, subsets=None, exclude=set()):
         '''
         
         WARNING:: code still needs to be tested!!!
         
-        Pre-process the data by performing a pca based rotation on it. 
+        Pre-process the data by performing a pca based rotation on it.
         This effectively turns the algorithm into PCA-PRIM as described
         in `Dalal et al (2013) <http://www.sciencedirect.com/science/article/pii/S1364815213001345>`_
         
         Parameters
         ----------
-        subsets: dict, optional 
-                 expects a dictionary with group name as key and a list of 
-                 uncertainty names as values. If this is used, a constrained 
-                 PCA-PRIM is executed 
+        subsets: dict, optional
+                 expects a dictionary with group name as key and a list of
+                 uncertainty names as values. If this is used, a constrained
+                 PCA-PRIM is executed
                  
-                ..note:: the list of uncertainties should not contain 
-                         categorical uncertainties. 
-        exclude : list of str, optional 
+                ..note:: the list of uncertainties should not contain
+                         categorical uncertainties.
+        exclude : list of str, optional
                   the uncertainties that should be excluded from the rotation
         
         '''
         
-        #transform experiments to numpy array
+        # transform experiments to numpy array
         dtypes = self.x.dtype.fields
-        object_dtypes = [key for key, value in dtypes.items() 
-                         if value[0]==np.dtype(object)]
+        object_dtypes = [key for key, value in dtypes.items()
+                         if value[0] == np.dtype(object)]
         
-        #get experiments of interest
+        # get experiments of interest
         # TODO this assumes binary classification!!!!!!!
-        logical = self.y>=self.threshold
+        logical = self.y >= self.threshold
         
-        # if no subsets are provided all uncertainties with non dtype object 
+        # if no subsets are provided all uncertainties with non dtype object
         # are in the same subset, the name of this is r, for rotation
         if not subsets:
-            subsets = {"r":[key for key, value in dtypes.items() 
-                            if value[0].name!=np.dtype(object)]}
+            subsets = {"r": [key for key, value in dtypes.items()
+                             if value[0].name != np.dtype(object)]}
         else:
-            # remove uncertainties that are in exclude and check whether 
+            # remove uncertainties that are in exclude and check whether
             # uncertainties occur in more then one subset
             seen = set()
             for key, value in subsets.items():
@@ -356,47 +356,47 @@ class Prim(object):
                 else:
                     seen = seen | set(value)
             
-        #prepare the dtypes for the new rotated experiments recarray
+        # prepare the dtypes for the new rotated experiments recarray
         new_dtypes = []
         for key, value in subsets.items():
             self._assert_dtypes(value, dtypes)
             
-            # the names of the rotated columns are based on the group name 
+            # the names of the rotated columns are based on the group name
             # and an index
-            [new_dtypes.append((str("{}_{}".format(key, i)), float)) for i 
+            [new_dtypes.append((str("{}_{}".format(key, i)), float)) for i
              in range(len(value))]
         
-        #add the uncertainties with object dtypes to the end
+        # add the uncertainties with object dtypes to the end
         included_object_dtypes = set(object_dtypes)-set(exclude)
         [new_dtypes.append((name, object)) for name in included_object_dtypes]
         
-        #make a new empty recarray
+        # make a new empty recarray
         rotated_experiments = np.empty((self.x.shape[0],), dtype=new_dtypes)
         
-        #put the uncertainties with object dtypes already into the new recarray 
-        for name in included_object_dtypes :
+        # put the uncertainties with object dtypes already into the new recarray
+        for name in included_object_dtypes:
             rotated_experiments[name] = self.x[name]
         
-        #iterate over the subsets, rotate them, and put them into the new 
+        # iterate over the subsets, rotate them, and put them into the new
         # recarray
         shape = 0
         for key, value in subsets.items():
-            shape += len(value) 
-        rotation_matrix = np.zeros((shape,shape))
+            shape += len(value)
+        rotation_matrix = np.zeros((shape, shape))
         column_names = []
         row_names = []
         
         j = 0
         for key, value in subsets.items():
             data = self._rotate_subset(value, self.x, logical)
-            subset_rotation_matrix, subset_experiments = data 
+            subset_rotation_matrix, subset_experiments = data
             rotation_matrix[j:j+len(value), j:j+len(value)] = subset_rotation_matrix
             [row_names.append(entry) for entry in value]
             j += len(value)
             
             for i in range(len(value)):
                 name = "%s_%s" % (key, i)
-                rotated_experiments[name] = subset_experiments[:,i]
+                rotated_experiments[name] = subset_experiments[:, i]
                 [column_names.append(name)]
         
         self.rotation_matrix = rotation_matrix
@@ -421,7 +421,7 @@ class Prim(object):
         # set the indices
         self._update_yi_remaining()
         
-        # make boxes already found immutable 
+        # make boxes already found immutable
         for box in self._boxes:
             box._frozen = True
         
@@ -442,8 +442,8 @@ class Prim(object):
         box = self._peel(box)
         logger.debug("peeling completed")
 
-        # perform pasting phase       
-        logger.debug("pasting started") 
+        # perform pasting phase
+        logger.debug("pasting started")
         box = self._paste(box)
         logger.debug("pasting completed")
         
@@ -475,8 +475,8 @@ class Prim(object):
         return boxes
 
     def determine_coi(self, indices):
-        '''        
-        Given a set of indices on y, how many cases of interest are there in 
+        '''
+        Given a set of indices on y, how many cases of interest are there in
         this set.
         
         Parameters
@@ -485,13 +485,13 @@ class Prim(object):
                  a valid index for y
 
         Returns
-        ------- 
+        -------
         int
             the number of cases of interest.
         
         Raises
         ------
-        ValueError 
+        ValueError
             if threshold_type is not either ABOVE or BELOW
 
         '''
@@ -509,7 +509,7 @@ class Prim(object):
         '''
         
         # set the indices
-        logical = np.ones(self.yi.shape[0],dtype=bool )
+        logical = np.ones(self.yi.shape[0], dtype=bool)
         for box in self._boxes:
             logical[box.yi] = False
         self.yi_remaining = self.yi[logical]
@@ -529,7 +529,7 @@ class Prim(object):
         a new box resulting from the peel operation, or the original box if
         no peeling was performed
         """
-        #identify all possible peels
+        # identify all possible peels
         possible_peels = []
         
         for entry in self.x.dtype.descr:
@@ -552,13 +552,12 @@ class Prim(object):
         
         for i, box_lim in possible_peels:
             obj = self.obj_func(self.y[box.yi], self.y[i])
-            non_res_dim = len(self.x.dtype.descr)-\
-                          determine_nr_restricted_dims(box_lim, 
-                                                       self._box_init)
+            non_res_dim = len(self.x.dtype.descr) - \
+                determine_nr_restricted_dims(box_lim, self._box_init)
             score = (obj, non_res_dim, box_lim, i)
             scores.append(score)
 
-        scores.sort(key=operator.itemgetter(0,1), reverse=True)
+        scores.sort(key=operator.itemgetter(0, 1), reverse=True)
         obj_score, non_res_dim, box_new, indices = scores[0]
         
         # if the best peel results in an improvement, return the peel;
@@ -573,14 +572,14 @@ class Prim(object):
             return box
     
     def _paste(self, box):
-        ''' Executes the pasting phase of the PRIM. Delegates pasting to data 
+        ''' Executes the pasting phase of the PRIM. Delegates pasting to data
         type specific helper methods.'''
         
         x = self.x[self.yi_remaining]
         res_dim = determine_restricted_dims(box._box_lims[-1],
                                             self._box_init)
         
-        #identify all possible pastes
+        # identify all possible pastes
         possible_pastes = []
         
         for u in res_dim:
@@ -591,7 +590,7 @@ class Prim(object):
                 raise PrimError("no paste operation defined for type %s" % dtype)
             
             pastes = Prim.PASTE_OPERATIONS[dtype](self, box, u)
-            [possible_pastes.append(entry) for entry in pastes] 
+            [possible_pastes.append(entry) for entry in pastes]
             
         # if there are no pastes identified, return the unchanged box
         if not possible_pastes:
@@ -603,13 +602,12 @@ class Prim(object):
         for entry in possible_pastes:
             i, box_lim = entry
             obj = self.obj_func(self.y[box.yi], self.y[i])
-            non_res_dim = len(x.dtype.descr)-\
-                          determine_nr_restricted_dims(box_lim,
-                                                       self._box_init)
+            non_res_dim = len(x.dtype.descr) - \
+                determine_nr_restricted_dims(box_lim, self._box_init)
             score = (obj, non_res_dim, box_lim, i)
             scores.append(score)
 
-        scores.sort(key=operator.itemgetter(0,1), reverse=True)
+        scores.sort(key=operator.itemgetter(0, 1), reverse=True)
         obj, _, box_new, indices = scores[0]
         
         # if the best paste results in an improvement, return the paste;
@@ -635,10 +633,10 @@ class Prim(object):
         
         for key in keys:
             if dtypes[key][0] == np.dtype(object):
-                raise PrimError("%s has dtype object and can thus not be rotated" %key)
+                raise PrimError("%s has dtype object and can thus not be rotated" % key)
         return True
 
-    def _rotate_subset(self, value, orig_experiments, logical): 
+    def _rotate_subset(self, value, orig_experiments, logical):
         '''
         rotate a subset
         
@@ -651,26 +649,25 @@ class Prim(object):
         '''
         list_dtypes = [(name, "<f8") for name in value]
         
-        #cast everything to float
+        # cast everything to float
         drop_names = set(rf.get_names(orig_experiments.dtype)) - set(value)
-        orig_subset = rf.drop_fields(orig_experiments, drop_names, 
-                                               asrecarray=True)
+        orig_subset = rf.drop_fields(orig_experiments, drop_names, asrecarray=True)
         subset_experiments = orig_subset.astype(list_dtypes).view('<f8').reshape(orig_experiments.shape[0], len(value))
  
-        #normalize the data
-        mean = np.mean(subset_experiments,axis=0)
+        # normalize the data
+        mean = np.mean(subset_experiments, axis=0)
         std = np.std(subset_experiments, axis=0)
-        std[std==0] = 1 #in order to avoid a devision by zero
+        std[std == 0] = 1  # in order to avoid a devision by zero
         subset_experiments = (subset_experiments - mean)/std
         
-        #get the experiments of interest
+        # get the experiments of interest
         experiments_of_interest = subset_experiments[logical]
         
-        #determine the rotation
-        rotation_matrix =  self._determine_rotation(experiments_of_interest)
+        # determine the rotation
+        rotation_matrix = self._determine_rotation(experiments_of_interest)
         
-        #apply the rotation
-        subset_experiments = np.dot(subset_experiments,rotation_matrix)
+        # apply the rotation
+        subset_experiments = np.dot(subset_experiments, rotation_matrix)
         return rotation_matrix, subset_experiments
 
     def _determine_rotation(self, experiments):
@@ -684,12 +681,11 @@ class Prim(object):
     
         indices = np.argsort(eigen_vals)
         indices = indices[::-1]
-        eigen_vectors = eigen_vectors[:,indices]
+        eigen_vectors = eigen_vectors[:, indices]
         eigen_vals = eigen_vals[indices]
         
-        #make the eigen vectors unit length
+        # make the eigen vectors unit length
         for i in range(eigen_vectors.shape[1]):
-            eigen_vectors[:,i] / np.linalg.norm(eigen_vectors[:,i]) * np.sqrt(eigen_vals[i])
+            eigen_vectors[:, i] / np.linalg.norm(eigen_vectors[:, i]) * np.sqrt(eigen_vals[i])
             
         return eigen_vectors
-

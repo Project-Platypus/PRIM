@@ -91,14 +91,14 @@ def lenient2(y_old, y_new):
     """
     mean_old = np.mean(y_old)
     
-    if y_new.shape[0]>0:
+    if y_new.shape[0] > 0:
         mean_new = np.mean(y_new)
     else:
         mean_new = 0
         
     obj = 0
     if mean_old != mean_new:
-        if y_old.shape==y_new.shape:
+        if y_old.shape == y_new.shape:
             raise PrimError('''mean is different {} vs {}, while shape is the same,
                                    this cannot be the case'''.format(mean_old, mean_new))
         
@@ -130,4 +130,4 @@ def original(y_old, y_new):
     if y_new.shape[0] > 0:
         return np.mean(y_new)
     else:
-        return -1    
+        return -1

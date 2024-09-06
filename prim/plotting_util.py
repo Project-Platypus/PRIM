@@ -56,9 +56,9 @@ def pairwise_labels(ax, i, j, field1, field2, ylabels, outcomes_to_show):
     ylabels : dict, optional
     outcomes_to_show : str
     """
-    #text and labels
+    # text and labels
     if i == j:
-        #only plot the name in the middle
+        # only plot the name in the middle
         if ylabels:
             text = ylabels[field1]
         else:
@@ -66,11 +66,11 @@ def pairwise_labels(ax, i, j, field1, field2, ylabels, outcomes_to_show):
         ax.text(0.5, 0.5, text,
                 horizontalalignment='center',
                 verticalalignment='center',
-                transform = ax.transAxes)  
+                transform=ax.transAxes)
     
     # are we at the end of the row?
     if i != len(outcomes_to_show)-1:
-        #xaxis off
+        # xaxis off
         ax.set_xticklabels([])
     else:
         if ylabels:
@@ -79,17 +79,17 @@ def pairwise_labels(ax, i, j, field1, field2, ylabels, outcomes_to_show):
             except KeyError:
                 logging.getLogger(__name__).info("no label specified for "+field2)
         else:
-            ax.set_xlabel(field2) 
+            ax.set_xlabel(field2)
     
     # are we at the end of the column?
     if j != 0:
-        #yaxis off
+        # yaxis off
         ax.set_yticklabels([])
     else:
         if ylabels:
             try:
                 ax.set_ylabel(ylabels.get(field1))
             except KeyError:
-                logging.getLogger(__name__).info("no label specified for "+field1) 
+                logging.getLogger(__name__).info("no label specified for " + field1)
         else:
-            ax.set_ylabel(field1)   
+            ax.set_ylabel(field1)
