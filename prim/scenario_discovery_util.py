@@ -16,10 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from __future__ import absolute_import, print_function, division
-
-import six
 import logging
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -72,7 +68,7 @@ def make_box(x):
     x : structured numpy array
     '''
     # get the types in the order they appear in the numpy array
-    types = [(v[1], k, v[0].name) for k, v in six.iteritems(x.dtype.fields)]
+    types = [(v[1], k, v[0].name) for k, v in x.dtype.fields.items()]
     types = sorted(types)
     
     # convert any bool types to object to store set(False, True)

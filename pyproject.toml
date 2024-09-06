@@ -16,7 +16,6 @@ dependencies = [
   "numpy",
   "pandas",
   "mplcursors",
-  "six",
   "scipy"]
 dynamic = ["version"]  # Version is read from prim/__init__.py
 

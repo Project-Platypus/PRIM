@@ -16,14 +16,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from __future__ import absolute_import, division
-
 import numpy as np
 from .exceptions import PrimError
 
 def lenient1(y_old, y_new):
-    """The default objective function (peeling criteria) used by PRIM.
+    r"""The default objective function (peeling criteria) used by PRIM.
     
     The basic idea is that the gain in mean is divided by the loss in mass.
     
