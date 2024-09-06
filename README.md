@@ -12,7 +12,7 @@ maintained by David Hadka.
 
 Licensed under the GNU General Public License, version 3 or later.
 
-<a href="https://github.com/Project-Platypus/PRIM"><img alt="GitHub Actions status" src="https://github.com/Project-Platypus/PRIM/workflows/Tests/badge.svg?branch=master&event=push"></a>
+[![Test and Publish](https://github.com/Project-Platypus/PRIM/actions/workflows/test-and-publish.yml/badge.svg)](https://github.com/Project-Platypus/PRIM/actions/workflows/test-and-publish.yml)
 [![PyPI](https://img.shields.io/pypi/v/PRIM.svg)](https://pypi.python.org/pypi/PRIM)
 [![PyPI](https://img.shields.io/pypi/dm/PRIM.svg)](https://pypi.python.org/pypi/PRIM)
 
